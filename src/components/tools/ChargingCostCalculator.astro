@@ -1,0 +1,74 @@
+---
+// Drop into any page or article with <ChargingCostCalculator />
+---
+<div class="tool" id="charging-cost-tool">
+  <div class="tool-head">
+    <span class="tool-badge">Calculator</span>
+    <h3>EV Home Charging Cost</h3>
+    <p>Estimate what a full charge and your monthly charging costs at home.</p>
+  </div>
+
+  <div class="tool-grid">
+    <label>
+      Battery size (kWh)
+      <input type="number" id="cc-battery" value="75" min="10" max="250" step="1" inputmode="decimal" />
+    </label>
+    <label>
+      Electricity rate ($/kWh)
+      <input type="number" id="cc-rate" value="0.16" min="0.01" max="1" step="0.01" inputmode="decimal" />
+    </label>
+    <label>
+      Miles driven per month
+      <input type="number" id="cc-miles" value="1000" min="0" max="10000" step="50" inputmode="numeric" />
+    </label>
+    <label>
+      Efficiency (mi/kWh)
+      <input type="number" id="cc-eff" value="3.2" min="1" max="7" step="0.1" inputmode="decimal" />
+    </label>
+    <label>
+      Charger efficiency (%)
+      <input type="number" id="cc-loss" value="90" min="60" max="100" step="1" inputmode="numeric" />
+    </label>
+  </div>
+
+  <div class="tool-results" aria-live="polite">
+    <div class="result-cell">
+      <span class="result-num" id="cc-full">$—</span>
+      <span class="result-label">Full charge (0→100%)</span>
+    </div>
+    <div class="result-cell">
+      <span class="result-num" id="cc-month">$—</span>
+      <span class="result-label">Est. monthly cost</span>
+    </div>
+    <div class="result-cell">
+      <span class="result-num" id="cc-permile">—¢</span>
+      <span class="result-label">Cost per mile</span>
+    </div>
+  </div>
+  <p class="tool-note">Estimates only, based on the numbers you enter. Actual utility rates, fees, and charging losses vary.</p>
+  <span id="cc-share-result" hidden></span>
+</div>
+
+<script>
+  function calcCharging() {
+    const v = (id: string) => parseFloat((document.getElementById(id) as HTMLInputElement)?.value) || 0;
+    const battery = v('cc-battery');
+    const rate = v('cc-rate');
+    const miles = v('cc-miles');
+    const eff = v('cc-eff');
+    const chargerEff = Math.max(v('cc-loss'), 1) / 100;
+
+    const fullCharge = (battery / chargerEff) * rate;
+    const kwhMonth = eff > 0 ? miles / eff / chargerEff : 0;
+    const monthly = kwhMonth * rate;
+    const perMile = miles > 0 ? (monthly / miles) * 100 : 0;
+
+    const set = (id: string, t: string) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+    set('cc-full', '$' + fullCharge.toFixed(2));
+    set('cc-month', '$' + monthly.toFixed(2));
+    set('cc-permile', perMile.toFixed(1) + '¢');
+    set('cc-share-result', `~$${monthly.toFixed(0)}/mo to charge at home (${perMile.toFixed(1)}¢/mile)`);
+  }
+  document.querySelectorAll('#charging-cost-tool input').forEach((i) => i.addEventListener('input', calcCharging));
+  calcCharging();
+</script>

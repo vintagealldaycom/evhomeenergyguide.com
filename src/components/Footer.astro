@@ -1,0 +1,74 @@
+---
+import { site, pillars } from '../config/site';
+const year = new Date().getFullYear();
+
+// Sim-Lab — most-searched tools. Live tools deep-link to their dedicated
+// pages; "soon" tools point at the listing until they ship.
+const popularCalculators = [
+  { name: 'EV Home Charging Cost', href: '/en/sim-lab/charging-cost/' },
+  { name: 'Solar & Battery Sizer', href: '/en/sim-lab/solar-battery-sizer/' },
+  { name: 'EV vs Gas Comparison', href: '/en/sim-lab/' },
+];
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="/Logo-nav.png" alt={site.name} width="28" height="32" loading="lazy" />
+        <p class="footer-desc">{site.description}</p>
+      </div>
+
+      <nav aria-label="Footer guides">
+        <h4>Guides</h4>
+        {pillars.map((p) => <a href={`/category/${p.slug}/`}>{p.title}</a>)}
+      </nav>
+
+      <nav aria-label="Sim-Lab tools">
+        <h4>Sim-Lab</h4>
+        {popularCalculators.map((c) => <a href={c.href}>{c.name}</a>)}
+        <a href="/en/sim-lab/" class="footer-all">View all in Sim-Lab →</a>
+      </nav>
+
+      <nav aria-label="Footer resources">
+        <h4>Resources</h4>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/sitemap-index.xml">Sitemap</a>
+      </nav>
+
+      <nav aria-label="Legal">
+        <h4>Legal</h4>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/privacy/">Privacy Policy</a>
+        <a href="/terms/">Terms of Service</a>
+      </nav>
+    </div>
+
+    <div class="footer-legal">
+      <p class="footer-copy">
+        © {year} {site.company}. All rights reserved. {site.name} is an educational
+        initiative of {site.company}. All content protected. Unauthorized scraping or
+        reproduction is prohibited.
+      </p>
+      <p class="footer-version">v{site.version}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { border-top: 1px solid var(--line); background: var(--bg-1); margin-top: 72px; padding: 48px 0 32px; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 36px; }
+  .footer-brand img { height: 32px; width: auto; margin-bottom: 14px; }
+  .footer-desc { color: var(--text-dim); font-size: 13.5px; max-width: 420px; line-height: 1.6; }
+  .site-footer h4 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 14px; }
+  .site-footer nav a { display: block; color: var(--text-mid); font-size: 13.5px; padding: 5px 0; }
+  .site-footer nav a:hover { color: var(--green); }
+  .footer-all { color: var(--green) !important; font-weight: 600; margin-top: 4px; }
+  .footer-legal { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-top: 8px; flex-wrap: wrap; }
+  .footer-copy { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); letter-spacing: 0.04em; line-height: 1.6; max-width: 720px; }
+  .footer-version { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); letter-spacing: 0.08em; white-space: nowrap; }
+  @media (max-width: 980px) { .footer-grid { grid-template-columns: 1fr 1fr 1fr; } .footer-brand { grid-column: 1 / -1; } }
+  @media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; } }
+</style>

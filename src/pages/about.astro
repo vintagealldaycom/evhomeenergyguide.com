@@ -1,0 +1,82 @@
+---
+import Base from '../layouts/Base.astro';
+import { site, author, pillars } from '../config/site';
+
+// About (update 4.4) — copy from About.MD. Pillar blurbs are About-specific
+// (they differ from the nav descriptions in config/site.ts on purpose).
+const pillarBlurbs: Record<string, string> = {
+  'EV Home Charging': 'Demystifying wall boxes, charging speeds, and rate optimization to keep your costs down.',
+  'Smart Energy': 'Taking control of smart panels and load management to make your home work for you, not against you.',
+  'Solar & Battery': 'Navigating the real-world utility of rooftop solar and whole-home backups.',
+  'Travel & Camping': 'Practical tips for V2L power, towing, and efficient route planning.',
+  'Tools & Workshop': 'Insights into the outdoor equipment and gear that keep your energy ecosystem running.',
+};
+---
+
+<Base title={`About ${author.name}`} description={`${author.name}, Founder of ${site.name} — turning the complexity of the modern electric home into simple, actionable knowledge.`}>
+  <section class="container about-wrap">
+    <span class="about-eyebrow">About {site.shortName}</span>
+    <h1>Hi, I'm {author.name}.</h1>
+    <p class="about-title">Founder, {site.name}</p>
+    <p class="about-bio">
+      I'm a developer, digital creator, and a homeowner who—like many of you—realized early on
+      that the "manual" for owning modern electric tech simply doesn't exist.
+    </p>
+    <p class="about-bio">
+      When I purchased my first home, I faced a steep learning curve with dozens of systems I
+      didn't fully understand. When I added an EV to the mix, that complexity doubled. I spent
+      months piecing together information about charging, energy rates, and home integration,
+      realizing that while the technology was incredible, the practical instruction manual for
+      the modern electric homeowner was missing.
+    </p>
+    <p class="about-bio">
+      I built this site to bridge that gap. My goal is to turn the complexity of the modern
+      electric home into simple, actionable knowledge. Whether it's putting your EV's battery
+      to work, saving on monthly utility bills, or just understanding how your home's energy
+      ecosystem actually fits together, this is the resource I wish I'd had when I started—not
+      just as a tech enthusiast, but as someone who cares about their home and family.
+    </p>
+
+    <h2>What you'll find here</h2>
+    <ul class="about-list">
+      {pillars.map((p) => (
+        <li><a href={`/category/${p.slug}/`}><strong>{p.title}</strong></a> — {pillarBlurbs[p.title] ?? p.description}</li>
+      ))}
+    </ul>
+
+    <p class="about-start"><strong>Ready to start?</strong> Browse our Calculators to run the numbers for your own home, or dive into our Featured Guides to begin mastering your energy ecosystem.</p>
+    <div class="about-cta">
+      <a href="/en/sim-lab/" class="btn btn-primary">Browse Calculators</a>
+      <a href="/#pillars" class="btn btn-ghost">Featured Guides</a>
+    </div>
+
+    <div class="about-note" role="note">
+      <strong>Important:</strong> {site.name} is a platform for education and advocacy, operated
+      by {site.company}. All content is for informational purposes only and does not constitute
+      professional, legal, or electrical advice. Always consult a licensed professional before
+      making modifications to your home or electrical system.
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about-wrap { max-width: 720px; padding: 56px 32px; }
+  .about-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); }
+  .about-wrap h1 { font-family: var(--font-display); font-size: clamp(32px, 4.5vw, 50px); font-weight: 800; letter-spacing: -0.03em; margin: 14px 0 6px; }
+  .about-title { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 24px; }
+  .about-bio { font-size: 15.5px; color: var(--text-mid); line-height: 1.7; margin-bottom: 16px; }
+  .about-cta { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 32px; }
+  .about-cta .btn { display: inline-block; padding: 12px 22px; border-radius: 100px; font-weight: 600; font-size: 14px; transition: transform 0.15s, background 0.15s, border-color 0.15s, color 0.15s; }
+  .about-cta .btn-primary { background: var(--green); color: #06220f; box-shadow: 0 6px 24px rgba(74,222,128,0.22); }
+  .about-cta .btn-primary:hover { background: var(--green-bright); transform: translateY(-1px); }
+  .about-cta .btn-ghost { border: 1px solid var(--bg-4); color: var(--text); }
+  .about-cta .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+  .about-wrap h2 { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 36px 0 16px; }
+  .about-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+  .about-list li { font-size: 14.5px; color: var(--text-mid); line-height: 1.6; padding-left: 16px; border-left: 2px solid var(--line); }
+  .about-list a { color: var(--green); }
+  .about-start { font-size: 15px; color: var(--text-mid); line-height: 1.7; margin-bottom: 4px; }
+  .about-start strong { color: var(--text); }
+  .about-note { padding: 16px 20px; border: 1px solid var(--bg-4); border-radius: var(--radius-sm); background: var(--bg-1); font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
+  .about-note strong { color: var(--amber); }
+</style>

@@ -1,0 +1,213 @@
+---
+import Base from '../layouts/Base.astro';
+
+// FAQ (update 4.4) — content from FAQ.md, layout per FAQ_layout.md.
+// Grouped accordion (<details>/<summary>) + live search filter.
+// Each question has a stable anchor id so guides can deep-link
+// (e.g. /faq/#data-privacy).
+const faqGroups = [
+  {
+    title: 'Privacy & Sim-Lab',
+    id: 'privacy-sim-lab',
+    items: [
+      {
+        id: 'data-privacy',
+        q: 'Is my personal energy data stored?',
+        a: 'No. We prioritize your privacy above all else. All simulations and calculations are performed locally within your browser, and no personal entries are ever saved or sent to a server.',
+      },
+      {
+        id: 'why-free',
+        q: 'Why are these tools free to use?',
+        a: 'Our mission is to provide the "missing manual" for the electric home. We believe that providing transparent, educational tools helps the average homeowner make smarter decisions, save money, and reduce their environmental footprint.',
+      },
+      {
+        id: 'accuracy',
+        q: 'How accurate are these simulations?',
+        a: 'Our tools use verified industry benchmarks to provide realistic estimates. While they are perfect for planning and "what-if" scenarios, they are intended for educational guidance rather than professional engineering or electrical consultation.',
+      },
+    ],
+  },
+  {
+    title: 'EV Home Charging',
+    id: 'ev-home-charging',
+    items: [
+      {
+        id: 'level-1-vs-level-2',
+        q: 'What is the difference between Level 1 and Level 2 charging?',
+        a: 'Level 1 uses a standard 120V household outlet and provides 3–5 miles of range per hour. Level 2 uses a 240V circuit (similar to a clothes dryer) and charges significantly faster, usually cutting charging time in half.',
+      },
+      {
+        id: 'panel-overload',
+        q: "Will an EV charger overload my home's electrical panel?",
+        a: 'It depends on your current capacity. Older homes with 100-amp panels may struggle if multiple high-load appliances are running. We recommend integrating a smart home energy management system to monitor your usage in real-time and automatically throttle your EV charger when other high-load appliances are active.',
+      },
+      {
+        id: 'best-time-to-charge',
+        q: 'What is the best time of day to charge?',
+        a: 'The most cost-effective time is during "off-peak" hours, typically late at night to early morning. Check with your utility provider for time-of-use (TOU) plans that can reduce your per-kWh costs by 30% to 50%.',
+      },
+    ],
+  },
+  {
+    title: 'Smart Energy & Home Systems',
+    id: 'smart-energy',
+    items: [
+      {
+        id: 'v2h-outage',
+        q: 'Can my car really power my home during an outage?',
+        a: "Only if your vehicle and charging setup support bi-directional charging (V2H/V2L). Most standard chargers cannot push power back into your home, so you'll need specific equipment to bridge that gap.",
+      },
+      {
+        id: 'energy-monitor',
+        q: 'Is it worth installing an energy monitor?',
+        a: 'Think of a smart monitor as a "fitness tracker" for your house. It reveals exactly which appliances are consuming your energy, helping you identify "vampire" or phantom loads that stay invisible on your monthly bill.',
+      },
+      {
+        id: 'getting-started',
+        q: 'How do I get started as a complete beginner?',
+        a: "Start by exploring our Featured Guides to understand your home's baseline, then use our Sim-Lab to model your specific setup. You don't need to be an engineer to optimize your home; you just need to know how the pieces fit together.",
+      },
+    ],
+  },
+];
+
+// Update 4.4.1 #6 — FAQPage JSON-LD so Google can index the Q&As as rich results.
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqGroups.flatMap((g) =>
+    g.items.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    }))
+  ),
+};
+---
+
+<Base
+  title="FAQ — EV Home Energy Guide"
+  description="Frequently asked questions about the Sim-Lab, data privacy, EV home charging, and smart home energy — everything you need to know about navigating the electric home ecosystem."
+>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+  <section class="container faq-wrap">
+    <header class="faq-head">
+      <h1>Frequently Asked Questions</h1>
+      <p class="faq-sub">Everything you need to know about navigating the electric home ecosystem.</p>
+      <div class="faq-search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="faq-filter" placeholder="Search for answers…" autocomplete="off" aria-label="Search frequently asked questions" />
+      </div>
+    </header>
+
+    {faqGroups.map((g) => (
+      <section class="faq-group" id={g.id}>
+        <h2>{g.title}</h2>
+        {g.items.map((item) => (
+          <details class="faq-item" id={item.id}>
+            <summary>
+              <span>{item.q}</span>
+              <svg class="faq-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </section>
+    ))}
+
+    <p class="faq-empty" hidden>No matching questions. Try a different word, or ask us directly below.</p>
+
+    <!-- "Still have questions?" close -->
+    <div class="faq-cta">
+      <h2>Still can't find the answer you're looking for?</h2>
+      <div class="faq-cta-actions">
+        <a href="/contact/" class="cta-btn primary">Suggest a tool →</a>
+        <a href="/contact/" class="cta-btn ghost">Contact →</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Live filter — hides questions (and empty groups) as the user types.
+  const input = document.getElementById('faq-filter') as HTMLInputElement | null;
+  const items = document.querySelectorAll<HTMLDetailsElement>('.faq-item');
+  const groups = document.querySelectorAll<HTMLElement>('.faq-group');
+  const empty = document.querySelector<HTMLElement>('.faq-empty');
+
+  input?.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    items.forEach((item) => {
+      const text = item.textContent?.toLowerCase() ?? '';
+      const match = !q || text.includes(q);
+      item.hidden = !match;
+      if (match) shown++;
+      if (q && match) item.open = true;
+      if (!q) item.open = false;
+    });
+    groups.forEach((g) => {
+      g.hidden = !Array.from(g.querySelectorAll<HTMLDetailsElement>('.faq-item')).some((i) => !i.hidden);
+    });
+    if (empty) empty.hidden = shown > 0;
+  });
+
+  // Deep link support: open + scroll to the anchored question.
+  if (location.hash) {
+    const target = document.querySelector<HTMLDetailsElement>(`.faq-item${location.hash}`);
+    if (target) { target.open = true; target.scrollIntoView({ block: 'center' }); }
+  }
+</script>
+
+<style>
+  .faq-wrap { max-width: 760px; padding-top: 56px; padding-bottom: 24px; }
+  .faq-head { margin-bottom: 40px; }
+  .faq-wrap h1 { font-family: var(--font-display); font-size: clamp(30px, 4.5vw, 46px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px; }
+  .faq-sub { font-size: 15.5px; color: var(--text-mid); line-height: 1.6; margin-bottom: 24px; }
+  .faq-search { position: relative; }
+  .faq-search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events: none; }
+  .faq-search input {
+    width: 100%; background: var(--bg-2); border: 1px solid var(--bg-4); border-radius: 100px;
+    color: var(--text); font-family: var(--font-body); font-size: 15px; padding: 14px 20px 14px 44px;
+    transition: border-color 0.15s;
+  }
+  .faq-search input:focus { outline: none; border-color: var(--green); }
+  .faq-search input::placeholder { color: var(--text-faint); }
+
+  .faq-group { margin-bottom: 36px; }
+  .faq-group h2 { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+
+  .faq-item { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-1); margin-bottom: 10px; overflow: hidden; transition: border-color 0.15s; }
+  .faq-item[open] { border-color: rgba(74,222,128,0.35); }
+  /* Large touch target for thumbs (FAQ_layout.md tip #1) */
+  .faq-item summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 17px 20px; min-height: 56px; cursor: pointer; list-style: none;
+    font-family: var(--font-display); font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--text); transition: color 0.12s;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary:hover { color: var(--green); }
+  .faq-chevron { flex-shrink: 0; color: var(--text-faint); transition: transform 0.2s; }
+  .faq-item[open] .faq-chevron { transform: rotate(180deg); color: var(--green); }
+  .faq-item > p { padding: 0 20px 18px; font-size: 14.5px; color: var(--text-mid); line-height: 1.7; }
+
+  .faq-empty { padding: 36px 20px; text-align: center; color: var(--text-dim); font-size: 14px; border: 1px dashed var(--bg-4); border-radius: var(--radius); margin-bottom: 32px; }
+
+  .faq-cta { text-align: center; margin: 48px 0 40px; padding: 40px 32px; border: 1px solid rgba(74,222,128,0.25); border-radius: var(--radius); background: radial-gradient(ellipse at 50% 120%, rgba(74,222,128,0.12), var(--bg-1) 70%); }
+  .faq-cta h2 { font-family: var(--font-display); font-size: clamp(20px, 3vw, 26px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 22px; }
+  .faq-cta-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .cta-btn { font-weight: 700; font-size: 14px; padding: 13px 24px; border-radius: 100px; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+  .cta-btn.primary { background: var(--green); color: #06220f; }
+  .cta-btn.primary:hover { background: var(--green-bright); }
+  .cta-btn.ghost { border: 1px solid var(--bg-4); color: var(--text-mid); }
+  .cta-btn.ghost:hover { border-color: var(--green); color: var(--green); }
+
+  @media (max-width: 640px) {
+    .faq-wrap { padding-top: 32px; }
+    .faq-head { margin-bottom: 28px; }
+    .faq-item summary { padding: 15px 16px; font-size: 15px; }
+    .faq-item > p { padding: 0 16px 16px; }
+    .faq-cta { padding: 30px 22px; }
+  }
+</style>

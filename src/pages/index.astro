@@ -1,0 +1,728 @@
+---
+import Base from '../layouts/Base.astro';
+import ChargingCostCalculator from '../components/tools/ChargingCostCalculator.astro';
+import ShareBar from '../components/ShareBar.astro';
+import { getCollection } from 'astro:content';
+import { site, pillars, heroArticle } from '../config/site';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const latest = posts.slice(0, 6);
+
+const photoClass: Record<string, string> = {
+  'ev-home-charging': 'photo-charge',
+  'smart-home-energy': 'photo-home',
+  'solar-battery-backup': 'photo-solar',
+  'ev-travel-camping': 'photo-camp',
+  'cordless-tools-workshop': 'photo-tools',
+};
+
+// Hero attention chart: range added per hour by charge level (DOE/AFDC figures).
+const chargeLevels = [
+  { label: 'Level 1 · 120V', miles: 4, note: '3–5 mi/hr', color: 'var(--amber)' },
+  { label: 'Level 2 · 240V', miles: 30, note: '~30 mi/hr', color: 'var(--green)' },
+  { label: 'DC Fast', miles: 200, note: '200+ mi / 30 min', color: 'var(--blue)' },
+];
+const maxMiles = Math.max(...chargeLevels.map((c) => c.miles));
+
+// #4 STAT BAND — real EV/home-energy data. Figures verified against government
+// sources (EIA, DOE/AFDC, US DOT FHWA, NREL). Update 4.4.1: stats are now
+// interactive — each cell shows its source (from SOURCES_PRIVATE_2.md) on
+// hover/tap with a link to the original data.
+const energyStats = [
+  { num: '17.9¢', unit: 'per kWh', label: 'Avg. U.S. home electricity rate', sub: 'National residential average, 2026', src: 'U.S. EIA — Electric Power Monthly, Table 5.6.A', href: 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a' },
+  { num: '~80%', unit: '', label: 'of EV charging happens at home', sub: 'Overnight Level 2 is the norm', src: 'U.S. DOE — Alternative Fuels Data Center', href: 'https://afdc.energy.gov/fuels/electricity-charging-home' },
+  { num: '3–5¢', unit: 'per mile', label: 'Typical home charging cost', sub: 'Roughly a third of gasoline', src: 'U.S. DOE — eGallon / FuelEconomy.gov', href: 'https://www.fueleconomy.gov/feg/Find.do?action=bt2' },
+  { num: '~30', unit: 'mi/hr', label: 'Range added on Level 2 (240V)', sub: 'vs. 3–5 mi/hr on Level 1', src: 'U.S. DOT — Rural EV Toolkit (charging speeds)', href: 'https://www.transportation.gov/rural/ev/toolkit/ev-basics/charging-speeds' },
+  { num: '20', unit: 'min', label: 'DC fast charge to 80%', sub: 'At high-power public stations', src: 'U.S. DOT — Rural EV Toolkit (charging speeds)', href: 'https://www.transportation.gov/rural/ev/toolkit/ev-basics/charging-speeds' },
+  { num: '37', unit: 'miles', label: 'Avg. miles driven per day (U.S.)', sub: 'Well within a nightly charge', src: 'U.S. DOT FHWA — National Household Travel Survey', href: 'https://nhts.ornl.gov/' },
+  { num: '4–5', unit: 'hrs/day', label: 'Avg. U.S. peak sun hours', sub: 'What sizes a solar array', src: 'NREL — PVWatts / NSRDB solar resource data', href: 'https://pvwatts.nrel.gov/' },
+  { num: '9.6', unit: 'kW', label: 'Top EV onboard power output', sub: 'Run a campsite or your home', src: 'Ford — F-150 Lightning Pro Power Onboard spec', href: 'https://www.ford.com/trucks/f150/f150-lightning/' },
+];
+
+// #6 EV CAMPING comparison — V2L output, usable battery, EPA range, approx price.
+// Approximate; varies by trim & model year. Sources kept private (see
+// SOURCES_PRIVATE_2.md). "Read more" points at the V2L camping guide.
+const evCamping = [
+  { name: 'Ford F-150 Lightning', v2l: '9.6 kW', battery: '~131 kWh', range: '~320 mi', price: '~$63k', best: true },
+  { name: 'Chevrolet Silverado EV', v2l: '7.2 kW', battery: '~205 kWh', range: '~450 mi', price: '~$75k', best: false },
+  { name: 'Kia EV9', v2l: '3.6 kW', battery: '~100 kWh', range: '~304 mi', price: '~$56k', best: false },
+  { name: 'Hyundai Ioniq 5', v2l: '3.6 kW', battery: '~84 kWh', range: '~318 mi', price: '~$43k', best: true },
+  { name: 'Kia EV6', v2l: '3.6 kW', battery: '~84 kWh', range: '~319 mi', price: '~$43k', best: false },
+  { name: 'Rivian R1T', v2l: '1.5 kW', battery: '~141 kWh', range: '~420 mi', price: '~$70k', best: false },
+];
+
+// Typical home usage breakdown (illustrative, links to the monitors guide)
+const usage = [
+  { label: 'EV charging', pct: 32, color: 'var(--green)' },
+  { label: 'Heating & cooling', pct: 24, color: 'var(--blue)' },
+  { label: 'Water heater', pct: 13, color: 'var(--amber)' },
+  { label: 'Kitchen & laundry', pct: 12, color: 'var(--orange)' },
+  { label: 'Lighting & electronics', pct: 10, color: 'var(--purple)' },
+  { label: 'Phantom loads', pct: 9, color: 'var(--pink)' },
+];
+
+// Illustrative monthly total for a typical EV home. Used only to turn the
+// usage percentages into concrete kWh figures on hover — clearly labelled
+// "illustrative" in the UI, not a claim of precision.
+const MONTHLY_KWH = 900;
+---
+
+<Base title={`${site.name} — ${site.tagline}`} description={site.description}>
+  <!-- HERO (v2 — featured L1 vs L2 guide with attention chart) -->
+  <section class="hero-home container">
+    <div class="hero-copy">
+      <span class="hero-eyebrow">Your Path to an Electric Home, Simplified.</span>
+      <h1>Power your life <em>smarter</em> and further.</h1>
+      <p class="hero-manual-line">The electric home manual you never got, written for the average owner.</p>
+      <p>
+        Your path to an electric home, simplified. Connecting your EV, solar, and battery
+        storage into one efficient system. From home chargers and solar gear to cordless
+        tool batteries and EV road trips — learn it all in one place.
+      </p>
+      <div class="hero-actions">
+        <a href="/en/sim-lab/" class="btn btn-primary">Try the Sim-Lab</a>
+        <a href="#pillars" class="btn btn-ghost">Browse the guides</a>
+      </div>
+    </div>
+
+    <a
+      href={heroArticle.url}
+      class="hero-featured"
+      target={heroArticle.external ? '_blank' : undefined}
+      rel={heroArticle.external ? 'noopener' : undefined}
+    >
+      <span class="pill-tag">● {heroArticle.eyebrow}</span>
+      <h2>{heroArticle.title}</h2>
+      <p>{heroArticle.blurb}</p>
+
+      <div class="hero-chart" role="img" aria-label="Range added per hour of charging: Level 1 about 4 miles, Level 2 about 30 miles, DC fast charging 200 plus miles in 30 minutes">
+        <span class="hero-chart-cap">Range added per hour of charging</span>
+        {chargeLevels.map((c) => (
+          <div
+            class="hc-row js-bar"
+            tabindex="0"
+            data-tip={`${c.label} · ${c.note}`}
+            aria-label={`${c.label}: ${c.note}`}
+          >
+            <span class="hc-label">{c.label}</span>
+            <span class="hc-track"><span class="hc-fill" style={`width:${Math.max((c.miles / maxMiles) * 100, 6)}%; background:${c.color}`}></span></span>
+            <span class="hc-note" style={`color:${c.color}`}>{c.note}</span>
+          </div>
+        ))}
+      </div>
+      <span class="hero-featured-cta">Read the full comparison →</span>
+    </a>
+  </section>
+
+  <!-- #8 — CALCULATOR AS FOCUS POINT (moved directly under the hero) -->
+  <section class="container try-section">
+    <div class="try-copy">
+      <span class="section-eyebrow">Try it right now — free</span>
+      <h2>What does home charging <em>really</em> cost you?</h2>
+      <p>
+        Most drivers overestimate it. Type your battery size, your electric rate, and your
+        monthly miles — the answer updates instantly. Then share your number.
+      </p>
+      <ul class="try-facts">
+        <li>Home charging typically runs <strong>3–5¢ per mile</strong> — a third of gasoline.</li>
+        <li>Overnight time-of-use rates can cut that <strong>nearly in half</strong> again.</li>
+        <li>Level 1 vs Level 2 costs the same per kWh — the difference is <strong>speed</strong>.</li>
+      </ul>
+    </div>
+    <div class="try-tool">
+      <ChargingCostCalculator />
+      <ShareBar label="My EV home charging cost" resultId="cc-share-result" />
+      <a href="/en/sim-lab/" class="try-more">More tools in the Sim-Lab →</a>
+    </div>
+  </section>
+
+  <!-- #4 — STAT BAND (EV & home-energy data) -->
+  <section class="container stat-section">
+    <div class="stat-head">
+      <span class="section-eyebrow">The numbers that matter</span>
+      <h2>National Energy Benchmarks</h2>
+    </div>
+    <div class="stat-grid">
+      {energyStats.map((s) => (
+        <div class="stat-cell" tabindex="0">
+          <span class="stat-num">{s.num}{s.unit && <em>{s.unit}</em>}</span>
+          <span class="stat-label">{s.label}</span>
+          <span class="stat-sub">{s.sub}</span>
+          <span class="stat-src-hint" aria-hidden="true">ⓘ</span>
+          <span class="stat-src">
+            <span class="stat-src-name">{s.src}</span>
+            <a href={s.href} target="_blank" rel="noopener nofollow">View source ↗</a>
+          </span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- THE ELECTRIC HOME MANUAL (update 4.4.1 #2) -->
+  <section class="container manual-section">
+    <div class="manual-grid">
+      <div class="manual-copy">
+        <span class="section-eyebrow">The Electric Home Manual</span>
+        <p>
+          Owning an electric home shouldn't be a DIY research project. We curate the complex
+          technical data into plain-English guides and interactive simulators, helping you put
+          your energy assets to work—saving you money, reducing your footprint, and making you
+          the expert for your family and friends.
+        </p>
+      </div>
+      {/* Update 4.4.2 #1 — interactive SVG dashboard: hover/tap an energy asset to light it up */}
+      <div class="manual-viz">
+        <svg viewBox="0 0 400 240" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Interactive schematic of a home energy system: solar panels, main panel, home battery, and EV charger">
+          <!-- ground -->
+          <line x1="16" y1="208" x2="384" y2="208" stroke="var(--line)" stroke-width="1.5" />
+          <!-- house shell -->
+          <g stroke="var(--text-mid)" stroke-width="1.8" fill="rgba(240,237,228,0.04)" stroke-linejoin="round">
+            <path d="M70 208 L70 110 L165 56 L260 110 L260 208 Z" />
+            <rect x="196" y="152" width="30" height="56" fill="rgba(0,0,0,0.25)" stroke-width="1.4" />
+            <rect x="90" y="150" width="26" height="22" fill="rgba(96,165,250,0.10)" stroke-width="1.4" />
+          </g>
+
+          <!-- energy flow wires (light up with their asset) -->
+          <path class="viz-wire wire-solar" d="M150 84 L150 118" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="3 3" />
+          <path class="viz-wire wire-batt" d="M148 132 Q120 138 106 182" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="3 3" />
+          <path class="viz-wire wire-ev" d="M162 132 Q240 140 296 172" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="3 3" />
+
+          <!-- SOLAR PANELS (roof) -->
+          <g class="viz-asset" data-asset="solar" tabindex="0" role="button" aria-label="Solar panels">
+            <path class="viz-shape" d="M108 104 L162 72 L212 100 L158 132 Z" fill="rgba(96,165,250,0.12)" stroke="var(--blue)" stroke-width="1.6" stroke-linejoin="round" />
+            <path d="M132 90 L184 118 M128 116 L182 86 M146 82 L198 110" stroke="var(--blue)" stroke-width="0.9" fill="none" opacity="0.7" />
+            <g class="viz-tag" transform="translate(96 40)">
+              <rect x="0" y="0" width="88" height="20" rx="10" fill="var(--bg-2)" stroke="rgba(96,165,250,0.5)" stroke-width="1" />
+              <text x="44" y="13.5" text-anchor="middle" fill="var(--blue)" font-size="10" font-family="var(--font-mono)">SOLAR ARRAY</text>
+            </g>
+          </g>
+
+          <!-- MAIN PANEL (on house wall) -->
+          <g class="viz-asset" data-asset="panel" tabindex="0" role="button" aria-label="Main electrical panel">
+            <rect class="viz-shape" x="142" y="116" width="26" height="34" rx="3" fill="rgba(251,191,36,0.12)" stroke="var(--amber)" stroke-width="1.6" />
+            <line x1="148" y1="124" x2="162" y2="124" stroke="var(--amber)" stroke-width="1.4" />
+            <line x1="148" y1="131" x2="162" y2="131" stroke="var(--amber)" stroke-width="1.4" />
+            <line x1="148" y1="138" x2="162" y2="138" stroke="var(--amber)" stroke-width="1.4" />
+            <g class="viz-tag" transform="translate(112 158)">
+              <rect x="0" y="0" width="84" height="20" rx="10" fill="var(--bg-2)" stroke="rgba(251,191,36,0.5)" stroke-width="1" />
+              <text x="42" y="13.5" text-anchor="middle" fill="var(--amber)" font-size="10" font-family="var(--font-mono)">MAIN PANEL</text>
+            </g>
+          </g>
+
+          <!-- HOME BATTERY (wall unit) -->
+          <g class="viz-asset" data-asset="battery" tabindex="0" role="button" aria-label="Home battery">
+            <rect class="viz-shape" x="96" y="180" width="20" height="28" rx="3" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.6" />
+            <path d="M109 185 L102 195 L106 195 L103 203 L110 193 L106 193 Z" fill="var(--green)" />
+            <g class="viz-tag" transform="translate(20 158)">
+              <rect x="0" y="0" width="88" height="20" rx="10" fill="var(--bg-2)" stroke="rgba(74,222,128,0.5)" stroke-width="1" />
+              <text x="44" y="13.5" text-anchor="middle" fill="var(--green)" font-size="10" font-family="var(--font-mono)">HOME BATTERY</text>
+            </g>
+          </g>
+
+          <!-- EV + CHARGER -->
+          <g class="viz-asset" data-asset="ev" tabindex="0" role="button" aria-label="EV charger">
+            <rect class="viz-shape" x="290" y="168" width="12" height="24" rx="2" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.5" />
+            <path class="viz-wire wire-cord" d="M302 176 Q314 176 318 186" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3 3" />
+            <g stroke="var(--text-mid)" stroke-width="1.7" fill="rgba(240,237,228,0.05)" stroke-linejoin="round">
+              <path d="M316 208 L316 194 Q316 189 322 189 L336 189 L344 180 L368 180 L376 189 L386 189 Q392 189 392 194 L392 208 Z" transform="translate(-8 0)" />
+            </g>
+            <circle cx="322" cy="208" r="7" fill="var(--bg-0)" stroke="var(--text-mid)" stroke-width="1.7" />
+            <circle cx="372" cy="208" r="7" fill="var(--bg-0)" stroke="var(--text-mid)" stroke-width="1.7" />
+            <g class="viz-tag" transform="translate(296 140)">
+              <rect x="0" y="0" width="82" height="20" rx="10" fill="var(--bg-2)" stroke="rgba(74,222,128,0.5)" stroke-width="1" />
+              <text x="41" y="13.5" text-anchor="middle" fill="var(--green)" font-size="10" font-family="var(--font-mono)">EV CHARGER</text>
+            </g>
+          </g>
+        </svg>
+        <span class="manual-viz-hint">Hover or tap an asset to see it light up</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- #7 — 5 PILLARS (below the fold; clear separation) -->
+  <div class="pillar-divider" aria-hidden="true"></div>
+  <section id="pillars" class="container pillars-section">
+    <div class="pillars-head">
+      <span class="section-eyebrow">Explore the guides</span>
+      <h2 class="section-title">Five paths. One electric home.</h2>
+      <p class="pillars-intro">Pick where you are today — each path connects to the rest of your home's energy system.</p>
+    </div>
+    <div class="pillar-grid">
+      {pillars.map((p) => (
+        <a href={`/category/${p.slug}/`} class="pillar-card" style={`--pc:${p.color}`}>
+          <h3>{p.title}</h3>
+          <p>{p.description}</p>
+          <ul>
+            {p.subcategories.map((s) => <li>{s}</li>)}
+          </ul>
+          <span class="pillar-cta">Explore →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- #5 — split into two self-titled cards (combined header dropped) -->
+  <section class="container monitor-section">
+    <div class="monitor-grid">
+      <!-- CHART: usage breakdown — interactive (#3) -->
+      <a href="/blog/smart-energy-monitors-guide/" class="monitor-card" aria-label="Read the smart energy monitors guide">
+        <span class="monitor-kicker">Where Your Power Goes</span>
+        <h3>A typical EV home's monthly usage</h3>
+        <div class="usage-chart" role="img" aria-label="Bar chart of home electricity usage by category, illustrative for a 900 kilowatt-hour month">
+          {usage.map((u) => {
+            const kwh = Math.round((MONTHLY_KWH * u.pct) / 100);
+            return (
+              <div
+                class="usage-row js-bar"
+                tabindex="0"
+                data-tip={`${u.label}: ${kwh} kWh · ${u.pct}%`}
+                aria-label={`${u.label}: about ${kwh} kilowatt-hours, ${u.pct} percent`}
+              >
+                <span class="usage-label">{u.label}</span>
+                <span class="usage-track"><span class="usage-fill" style={`width:${u.pct * 2.6}%; background:${u.color}`}></span></span>
+                <span class="usage-pct" style={`color:${u.color}`}>{u.pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+        <span class="usage-basis">Illustrative — based on a typical ~{MONTHLY_KWH} kWh/mo EV home. Hover a bar for kWh.</span>
+        <!-- Update 4.3.2 — schematic: home + solar + battery + EV, matches camp-scene style -->
+        <div class="home-scene" aria-hidden="true">
+          <svg viewBox="0 0 400 130" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" role="img">
+            <defs>
+              <linearGradient id="homeSky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="rgba(74,222,128,0.10)" />
+                <stop offset="1" stop-color="rgba(74,222,128,0)" />
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="400" height="130" fill="url(#homeSky)" />
+            <!-- sun -->
+            <g stroke="var(--amber)" stroke-width="1.5" opacity="0.75" fill="none">
+              <circle cx="52" cy="30" r="10" />
+              <line x1="52" y1="12" x2="52" y2="16" /><line x1="52" y1="44" x2="52" y2="48" />
+              <line x1="34" y1="30" x2="38" y2="30" /><line x1="66" y1="30" x2="70" y2="30" />
+              <line x1="39" y1="17" x2="42" y2="20" /><line x1="62" y1="40" x2="65" y2="43" />
+              <line x1="65" y1="17" x2="62" y2="20" /><line x1="42" y1="40" x2="39" y2="43" />
+            </g>
+            <!-- ground line -->
+            <line x1="0" y1="104" x2="400" y2="104" stroke="var(--line)" stroke-width="1.5" />
+            <!-- house -->
+            <g stroke="var(--text-mid)" stroke-width="1.8" fill="rgba(240,237,228,0.05)" stroke-linejoin="round">
+              <path d="M118 104 L118 60 L160 36 L202 60 L202 104 Z" />
+              <rect x="132" y="76" width="16" height="14" fill="rgba(96,165,250,0.12)" stroke-width="1.4" />
+              <rect x="170" y="76" width="18" height="28" fill="rgba(0,0,0,0.25)" stroke-width="1.4" />
+            </g>
+            <!-- solar panel on roof -->
+            <g stroke="var(--blue)" stroke-width="1.5" fill="rgba(96,165,250,0.12)" stroke-linejoin="round">
+              <path d="M136 58 L162 43 L184 55 L158 70 Z" />
+              <path d="M149 51 L171 63 M147 62 L169 50" stroke-width="1" fill="none" />
+            </g>
+            <!-- home battery on wall -->
+            <g stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round">
+              <rect x="207" y="74" width="14" height="26" rx="2" fill="var(--green-soft)" />
+              <path d="M216 78 L211 86 L214 86 L212 94 L217 85 L214 85 Z" fill="var(--green)" stroke="none" />
+            </g>
+            <!-- charging cable: battery → EV -->
+            <path d="M221 92 Q244 92 252 98" fill="none" stroke="var(--green)" stroke-width="1.6" stroke-dasharray="3 3" />
+            <!-- EV -->
+            <g stroke="var(--text-mid)" stroke-width="1.8" fill="rgba(240,237,228,0.05)" stroke-linejoin="round">
+              <path d="M256 102 L256 88 Q256 83 263 83 L281 83 L291 73 L321 73 L331 83 L346 83 Q352 83 352 88 L352 102 Z" />
+              <path d="M281 83 L291 75 L319 75 L327 83 Z" fill="rgba(96,165,250,0.12)" />
+            </g>
+            <circle cx="274" cy="102" r="8" fill="var(--bg-0)" stroke="var(--text-mid)" stroke-width="1.8" />
+            <circle cx="334" cy="102" r="8" fill="var(--bg-0)" stroke="var(--text-mid)" stroke-width="1.8" />
+            <!-- charge port bolt badge -->
+            <g transform="translate(296 52)">
+              <circle cx="6" cy="6" r="10" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2" />
+              <path d="M8 0 L2 7 L6 7 L4 12 L10 5 L6 5 L8 0 Z" fill="var(--green)" />
+            </g>
+          </svg>
+        </div>
+        <span class="monitor-link">See what a monitor catches that your bill hides →</span>
+      </a>
+
+      <!-- #6 — EV CAMPING comparison table, now with a #1 scene diagram -->
+      <a href="/blog/ev-camping-v2l-setup/" class="monitor-card" aria-label="Read the EV camping V2L setup guide">
+        <div class="camp-scene" aria-hidden="true">
+          <svg viewBox="0 0 400 150" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" role="img">
+            <defs>
+              <linearGradient id="campSky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="rgba(74,222,128,0.10)" />
+                <stop offset="1" stop-color="rgba(74,222,128,0)" />
+              </linearGradient>
+              <linearGradient id="campBolt" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="var(--green-bright)" />
+                <stop offset="1" stop-color="var(--green)" />
+              </linearGradient>
+            </defs>
+            <!-- sky wash -->
+            <rect x="0" y="0" width="400" height="150" fill="url(#campSky)" />
+            <!-- stars -->
+            <circle cx="60" cy="26" r="1.3" fill="var(--text-faint)" />
+            <circle cx="110" cy="16" r="1" fill="var(--text-faint)" />
+            <circle cx="250" cy="22" r="1.2" fill="var(--text-faint)" />
+            <circle cx="330" cy="30" r="1" fill="var(--text-faint)" />
+            <circle cx="300" cy="14" r="1.4" fill="var(--text-faint)" />
+            <!-- moon -->
+            <circle cx="352" cy="34" r="13" fill="none" stroke="var(--amber)" stroke-width="1.5" opacity="0.7" />
+            <!-- ground line -->
+            <line x1="0" y1="120" x2="400" y2="120" stroke="var(--line)" stroke-width="1.5" />
+            <!-- pine trees -->
+            <g fill="none" stroke="var(--green)" stroke-width="1.6" opacity="0.6" stroke-linejoin="round">
+              <path d="M40 120 L40 92 M40 96 L30 108 L50 108 Z M40 88 L32 100 L48 100 Z" />
+              <path d="M70 120 L70 100 M70 102 L62 112 L78 112 Z" />
+            </g>
+            <!-- tent -->
+            <g stroke="var(--blue)" stroke-width="1.8" fill="rgba(96,165,250,0.10)" stroke-linejoin="round">
+              <path d="M96 120 L128 78 L160 120 Z" />
+              <path d="M128 78 L128 120" stroke-width="1.4" />
+              <path d="M118 120 L128 100 L138 120 Z" fill="rgba(0,0,0,0.25)" stroke="none" />
+            </g>
+            <!-- EV (simple SUV silhouette) -->
+            <g stroke="var(--text-mid)" stroke-width="1.8" fill="rgba(240,237,228,0.05)" stroke-linejoin="round">
+              <path d="M210 118 L210 100 Q210 94 218 94 L240 94 L252 82 L288 82 L300 94 L318 94 Q326 94 326 100 L326 118 Z" />
+              <path d="M240 94 L252 84 L286 84 L296 94 Z" fill="rgba(96,165,250,0.12)" />
+              <line x1="268" y1="84" x2="268" y2="94" stroke-width="1.2" />
+            </g>
+            <circle cx="232" cy="118" r="9" fill="var(--bg-0)" stroke="var(--text-mid)" stroke-width="1.8" />
+            <circle cx="304" cy="118" r="9" fill="var(--bg-0)" stroke="var(--text-mid)" stroke-width="1.8" />
+            <!-- V2L power cable from EV to a little appliance -->
+            <path d="M326 108 Q352 108 356 118 L356 118" fill="none" stroke="var(--green)" stroke-width="1.6" stroke-dasharray="3 3" />
+            <rect x="348" y="106" width="16" height="12" rx="2" fill="none" stroke="var(--green)" stroke-width="1.4" />
+            <!-- V2L bolt badge on the EV -->
+            <g transform="translate(262 60)">
+              <circle cx="6" cy="6" r="11" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2" />
+              <path d="M8 0 L2 7 L6 7 L4 12 L10 5 L6 5 L8 0 Z" fill="url(#campBolt)" />
+            </g>
+            <!-- campfire -->
+            <g stroke="var(--orange)" stroke-width="1.6" fill="none" stroke-linecap="round">
+              <path d="M176 120 Q182 112 179 106 Q185 110 184 118" />
+              <line x1="170" y1="120" x2="188" y2="120" stroke="var(--amber)" />
+            </g>
+          </svg>
+        </div>
+        <span class="monitor-kicker">EVs Ready for Adventure</span>
+        <h3>Best EVs for camping (V2L power)</h3>
+        <div class="camp-table" role="table" aria-label="EV camping comparison: vehicle-to-load output, battery, range, and price">
+          <div class="camp-row camp-head" role="row">
+            <span role="columnheader">Vehicle</span>
+            <span role="columnheader">V2L</span>
+            <span role="columnheader">Battery</span>
+            <span role="columnheader">Range</span>
+            <span role="columnheader">From</span>
+          </div>
+          {evCamping.map((v) => (
+            <div class:list={['camp-row', { top: v.best }]} role="row">
+              <span class="camp-name" role="cell">{v.name}{v.best && <em class="camp-star">★</em>}</span>
+              <span role="cell">{v.v2l}</span>
+              <span role="cell">{v.battery}</span>
+              <span role="cell">{v.range}</span>
+              <span role="cell">{v.price}</span>
+            </div>
+          ))}
+        </div>
+        <span class="camp-foot">★ Top camping pick · figures approximate, vary by trim &amp; year</span>
+        <span class="monitor-link">See the full EV camping breakdown →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- LATEST -->
+  {latest.length > 0 && (
+    <section class="container latest-section">
+      <h2 class="section-title">Latest guides</h2>
+      <div class="latest-grid">
+        {latest.map((p) => (
+          <a href={`/blog/${p.id}/`} class="latest-card">
+            <div class:list={['latest-thumb', 'photo', photoClass[p.data.category]]}></div>
+            <div class="latest-body">
+              <span class="latest-cat">{pillars.find((x) => x.slug === p.data.category)?.title}</span>
+              <h3>{p.data.title}</h3>
+              <p>{p.data.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- FINAL CTA (moved from Sim-Lab, update 4.4.1 #3–4) -->
+  <section class="container">
+    <div class="final-cta">
+      <h2>Ready to optimize your home?</h2>
+      <p>Start by sizing your backup power or calculating your charging costs.</p>
+      <div class="final-cta-actions">
+        <a href="/en/sim-lab/solar-battery-sizer/" class="cta-btn primary">Size my backup power →</a>
+        <a href="/en/sim-lab/charging-cost/" class="cta-btn ghost">Calculate charging costs →</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // #3 — lightweight, dependency-free chart tooltips.
+  // Any element with .js-bar + data-tip shows a floating value on hover/focus.
+  (() => {
+    const bars = Array.from(document.querySelectorAll<HTMLElement>('.js-bar'));
+    if (!bars.length) return;
+
+    const tip = document.createElement('div');
+    tip.className = 'chart-tip';
+    tip.setAttribute('role', 'status');
+    document.body.appendChild(tip);
+
+    let raf = 0;
+    function place(x: number, y: number) {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const r = tip.getBoundingClientRect();
+        let left = x - r.width / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - r.width - 8));
+        let top = y - r.height - 12;
+        if (top < 8) top = y + 16; // flip below if no room above
+        tip.style.left = `${left}px`;
+        tip.style.top = `${top}px`;
+      });
+    }
+
+    function show(el: HTMLElement, x: number, y: number) {
+      const text = el.dataset.tip;
+      if (!text) return;
+      tip.textContent = text;
+      tip.classList.add('show');
+      place(x, y);
+    }
+    function hide() { tip.classList.remove('show'); }
+
+    bars.forEach((bar) => {
+      bar.addEventListener('mouseenter', (e) => show(bar, e.clientX, e.clientY));
+      bar.addEventListener('mousemove', (e) => { if (tip.classList.contains('show')) place(e.clientX, e.clientY); });
+      bar.addEventListener('mouseleave', hide);
+      bar.addEventListener('focus', () => {
+        const r = bar.getBoundingClientRect();
+        show(bar, r.left + r.width / 2, r.top);
+      });
+      bar.addEventListener('blur', hide);
+    });
+    window.addEventListener('scroll', hide, { passive: true });
+  })();
+</script>
+
+<style>
+  /* HERO */
+  .hero-home { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 44px; padding-top: 64px; padding-bottom: 52px; align-items: center; }
+  .hero-home::before { content: ''; position: absolute; top: -80px; left: -10%; width: 55%; height: 420px; background: radial-gradient(ellipse at center, rgba(74,222,128,0.07), transparent 65%); pointer-events: none; }
+  .hero-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); display: inline-block; margin-bottom: 20px; }
+  .hero-copy h1 { font-family: var(--font-display); font-size: clamp(38px, 5vw, 62px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; margin-bottom: 20px; }
+  .hero-copy h1 em { font-style: normal; color: var(--green); }
+  .hero-manual-line { font-family: var(--font-display); font-size: 17px; font-weight: 600; font-style: italic; color: var(--text); letter-spacing: -0.01em; margin: -8px 0 14px; }
+  .hero-copy p { font-size: 16.5px; color: var(--text-mid); line-height: 1.65; max-width: 540px; margin-bottom: 30px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 13px 24px; border-radius: 100px; font-weight: 600; font-size: 14.5px; transition: transform 0.15s, background 0.15s, border-color 0.15s, color 0.15s; }
+  .btn-primary { background: var(--green); color: #06220f; box-shadow: 0 6px 24px rgba(74,222,128,0.25); }
+  .btn-primary:hover { background: var(--green-bright); transform: translateY(-1px); }
+  .btn-ghost { border: 1px solid var(--bg-4); color: var(--text); }
+  .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+  /* HERO FEATURED CARD (with attention chart) */
+  .hero-featured { position: relative; display: flex; flex-direction: column; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(160deg, var(--bg-1), var(--bg-0)); padding: 26px 28px; transition: border-color 0.2s, transform 0.2s; }
+  .hero-featured:hover { border-color: var(--green); transform: translateY(-2px); }
+  .pill-tag { align-self: flex-start; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green); background: rgba(74,222,128,0.14); border: 1px solid rgba(74,222,128,0.3); padding: 5px 12px; border-radius: 100px; }
+  .hero-featured h2 { font-family: var(--font-display); font-size: 23px; font-weight: 800; letter-spacing: -0.025em; color: var(--text); margin: 14px 0 8px; line-height: 1.18; }
+  .hero-featured > p { color: var(--text-dim); font-size: 13.5px; line-height: 1.55; margin-bottom: 16px; }
+  .hero-chart { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .hero-chart-cap { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
+  .hc-row { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px; align-items: center; }
+  .hc-label { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-mid); }
+  .hc-track { height: 9px; background: var(--bg-3); border-radius: 100px; overflow: hidden; }
+  .hc-fill { display: block; height: 100%; border-radius: 100px; }
+  .hc-note { font-family: var(--font-mono); font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .hero-featured-cta { margin-top: 16px; font-size: 13px; font-weight: 700; color: var(--green); }
+
+  /* SECTION SHARED */
+  .section-title { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 28px; }
+  .section-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); }
+
+  /* TRY IT NOW (calculator focus) */
+  .try-section { display: grid; grid-template-columns: 1fr 1.15fr; gap: 48px; align-items: center; padding: 20px 0 8px; }
+  .try-copy h2 { font-family: var(--font-display); font-size: clamp(28px, 3.6vw, 42px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; margin: 14px 0 16px; }
+  .try-copy h2 em { font-style: normal; color: var(--green); }
+  .try-copy > p { color: var(--text-mid); font-size: 15.5px; line-height: 1.65; margin-bottom: 20px; }
+  .try-facts { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+  .try-facts li { font-size: 14px; color: var(--text-mid); padding-left: 18px; position: relative; line-height: 1.55; }
+  .try-facts li::before { content: ''; position: absolute; left: 0; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .try-facts strong { color: var(--text); }
+  .try-tool { display: flex; flex-direction: column; gap: 12px; }
+  .try-tool :global(.tool) { margin: 0; }
+  .try-more {
+    align-self: flex-end; font-size: 13.5px; font-weight: 700; color: var(--green);
+    padding: 4px 2px; transition: color 0.15s, transform 0.15s;
+  }
+  .try-more:hover { color: var(--green-bright); transform: translateX(2px); }
+
+  /* STAT BAND */
+  .stat-section { padding: 56px 0 8px; }
+  .stat-head { margin-bottom: 22px; }
+  .stat-head h2 { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -0.03em; margin-top: 8px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .stat-cell { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 22px 20px; background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--radius); cursor: help; transition: border-color 0.15s; }
+  /* Update 4.4.1 #5 — interactive benchmarks: hover/tap/focus reveals the source */
+  .stat-cell:hover, .stat-cell:focus-within, .stat-cell:focus { border-color: rgba(74,222,128,0.4); }
+  .stat-src-hint { position: absolute; top: 12px; right: 14px; font-size: 12px; color: var(--text-faint); transition: color 0.15s; }
+  .stat-cell:hover .stat-src-hint, .stat-cell:focus .stat-src-hint { color: var(--green); }
+  .stat-src {
+    position: absolute; left: 10px; right: 10px; bottom: calc(100% - 6px); z-index: 5;
+    display: flex; flex-direction: column; gap: 6px; padding: 12px 14px;
+    background: var(--bg-2); border: 1px solid rgba(74,222,128,0.35); border-radius: var(--radius-sm);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    opacity: 0; visibility: hidden; transform: translateY(4px);
+    transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  }
+  .stat-cell:hover .stat-src, .stat-cell:focus .stat-src, .stat-cell:focus-within .stat-src { opacity: 1; visibility: visible; transform: translateY(0); }
+  .stat-src-name { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--text-mid); line-height: 1.5; }
+  .stat-src a { font-size: 12px; font-weight: 700; color: var(--green); }
+  .stat-src a:hover { color: var(--green-bright); }
+
+  /* Update 4.4.1 #2 — The Electric Home Manual */
+  .manual-section { margin-top: 56px; }
+  .manual-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; padding: 36px 40px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-1); }
+  .manual-copy p { font-size: 16px; color: var(--text-mid); line-height: 1.75; margin-top: 14px; }
+  .manual-viz { position: relative; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-2); padding: 8px 8px 26px; }
+  .manual-viz svg { display: block; }
+  .manual-viz-hint { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; color: var(--text-faint); }
+  /* Assets: dim by default, light up on hover / tap / keyboard focus (transform+opacity+filter only) */
+  .manual-viz :global(.viz-asset) { cursor: pointer; outline: none; }
+  .manual-viz :global(.viz-shape) { transition: filter 0.2s, opacity 0.2s; opacity: 0.75; }
+  .manual-viz :global(.viz-tag) { opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .manual-viz :global(.viz-asset:hover .viz-shape),
+  .manual-viz :global(.viz-asset:focus .viz-shape) { opacity: 1; filter: drop-shadow(0 0 8px currentColor) brightness(1.25); }
+  .manual-viz :global(.viz-asset:hover .viz-tag),
+  .manual-viz :global(.viz-asset:focus .viz-tag) { opacity: 1; }
+  .manual-viz :global(.viz-asset[data-asset='solar'] .viz-shape) { color: var(--blue); }
+  .manual-viz :global(.viz-asset[data-asset='panel'] .viz-shape) { color: var(--amber); }
+  .manual-viz :global(.viz-asset[data-asset='battery'] .viz-shape),
+  .manual-viz :global(.viz-asset[data-asset='ev'] .viz-shape) { color: var(--green); }
+  @media (prefers-reduced-motion: reduce) {
+    .manual-viz :global(.viz-shape), .manual-viz :global(.viz-tag) { transition: none; }
+  }
+
+  /* Final CTA (moved from Sim-Lab, update 4.4.1 #3–4) */
+  .final-cta { text-align: center; margin: 56px 0 8px; padding: 44px 36px; border: 1px solid rgba(74,222,128,0.25); border-radius: var(--radius); background: radial-gradient(ellipse at 50% 120%, rgba(74,222,128,0.12), var(--bg-1) 70%); }
+  .final-cta h2 { font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px; }
+  .final-cta p { font-size: 15px; color: var(--text-mid); margin-bottom: 24px; }
+  .final-cta-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .cta-btn { font-weight: 700; font-size: 14px; padding: 13px 24px; border-radius: 100px; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+  .cta-btn.primary { background: var(--green); color: #06220f; }
+  .cta-btn.primary:hover { background: var(--green-bright); }
+  .cta-btn.ghost { border: 1px solid var(--bg-4); color: var(--text-mid); }
+  .cta-btn.ghost:hover { border-color: var(--green); color: var(--green); }
+  .stat-num { font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: var(--green); }
+  .stat-num em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--text-dim); margin-left: 5px; letter-spacing: 0; }
+  .stat-label { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.35; }
+  .stat-sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em; color: var(--text-faint); line-height: 1.4; }
+
+  /* PILLAR SEPARATION */
+  .pillar-divider { max-width: var(--max-w); margin: 40px auto 0; height: 1px; background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent); }
+  .pillars-section { padding: 48px 0 8px; }
+  .pillars-head { text-align: center; max-width: 640px; margin: 0 auto 30px; }
+  .pillars-head .section-title { margin: 10px 0 10px; }
+  .pillars-intro { font-size: 15px; color: var(--text-dim); line-height: 1.6; }
+  .pillar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .pillar-card { display: flex; flex-direction: column; gap: 10px; padding: 26px 24px; background: var(--bg-1); border: 1px solid var(--line); border-top: 3px solid var(--pc); border-radius: var(--radius); transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
+  .pillar-card:hover { transform: translateY(-4px); border-color: var(--pc); box-shadow: 0 14px 36px rgba(0,0,0,0.35); }
+  .pillar-card h3 { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .pillar-card > p { font-size: 13px; color: var(--text-dim); line-height: 1.55; }
+  .pillar-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; margin: 6px 0; }
+  .pillar-card li { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); letter-spacing: 0.04em; }
+  .pillar-card li::before { content: '·'; color: var(--pc); margin-right: 7px; }
+  .pillar-cta { margin-top: auto; font-size: 13px; font-weight: 600; color: var(--pc); }
+
+  /* MONITOR + CAMPING */
+  .monitor-section { padding: 64px 0 8px; }
+  .monitor-head { max-width: 660px; margin-bottom: 28px; }
+  .monitor-head h2 { font-family: var(--font-display); font-size: clamp(26px, 3.4vw, 38px); font-weight: 800; letter-spacing: -0.03em; margin: 14px 0 12px; }
+  .monitor-head p { font-size: 15.5px; color: var(--text-mid); line-height: 1.65; }
+  .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .monitor-card { display: flex; flex-direction: column; gap: 16px; padding: 28px; background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--radius); transition: border-color 0.15s, transform 0.15s; }
+  .monitor-card:hover { border-color: var(--green); transform: translateY(-3px); }
+  .monitor-card h3 { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .monitor-kicker { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green); margin-bottom: -8px; }
+  .monitor-link { margin-top: auto; font-size: 13.5px; font-weight: 600; color: var(--green); }
+
+  /* #1 — EV camping scene diagram */
+  .camp-scene { aspect-ratio: 400 / 150; width: 100%; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); overflow: hidden; margin-bottom: -2px; }
+  .camp-scene svg { display: block; }
+  /* Update 4.3.2 — schematic under the usage chart */
+  .home-scene { aspect-ratio: 400 / 130; width: 100%; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); overflow: hidden; }
+  .home-scene svg { display: block; }
+
+  .usage-chart { display: flex; flex-direction: column; gap: 4px; }
+  .usage-row { display: grid; grid-template-columns: 148px 1fr 40px; gap: 12px; align-items: center; padding: 5px 8px; margin: 0 -8px; border-radius: 8px; transition: background 0.12s; }
+  .usage-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-mid); }
+  .usage-track { height: 10px; background: var(--bg-3); border-radius: 100px; overflow: hidden; }
+  .usage-fill { display: block; height: 100%; border-radius: 100px; transition: filter 0.12s; }
+  .usage-pct { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; text-align: right; }
+  .usage-basis { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.03em; color: var(--text-faint); line-height: 1.5; margin-top: 2px; }
+
+  /* #3 — interactive bars (usage chart + hero chart) */
+  .js-bar { cursor: default; outline: none; }
+  .js-bar:hover, .js-bar:focus-visible { background: var(--bg-2); }
+  .js-bar:hover .usage-fill, .js-bar:focus-visible .usage-fill,
+  .js-bar:hover .hc-fill, .js-bar:focus-visible .hc-fill { filter: brightness(1.18); }
+  .hc-row.js-bar { padding: 3px 6px; margin: -3px -6px; border-radius: 6px; transition: background 0.12s; }
+  .hc-row.js-bar:hover, .hc-row.js-bar:focus-visible { background: var(--bg-3); }
+
+  /* Floating tooltip shared by both charts */
+  :global(.chart-tip) {
+    position: fixed; z-index: 120; pointer-events: none;
+    background: var(--bg-0); border: 1px solid var(--green);
+    color: var(--text); font-family: var(--font-mono); font-size: 11.5px;
+    letter-spacing: 0.02em; padding: 7px 11px; border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); white-space: nowrap;
+    opacity: 0; transform: translateY(4px); transition: opacity 0.12s, transform 0.12s;
+  }
+  :global(.chart-tip.show) { opacity: 1; transform: translateY(0); }
+
+  /* CAMP TABLE */
+  .camp-table { display: flex; flex-direction: column; gap: 2px; }
+  .camp-row { display: grid; grid-template-columns: 1.7fr 0.9fr 1fr 0.9fr 0.8fr; gap: 8px; align-items: center; padding: 9px 10px; border-radius: 8px; font-size: 12px; color: var(--text-mid); }
+  .camp-row span { font-variant-numeric: tabular-nums; }
+  .camp-head { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); padding-bottom: 4px; }
+  .camp-row:not(.camp-head):nth-child(odd) { background: var(--bg-2); }
+  .camp-row.top { background: var(--green-soft); }
+  .camp-name { font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 5px; }
+  .camp-star { font-style: normal; color: var(--green); font-size: 10px; }
+  .camp-foot { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-faint); letter-spacing: 0.03em; }
+
+  /* LATEST */
+  .latest-section { padding: 56px 0 8px; }
+  .latest-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .latest-card { background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; transition: border-color 0.15s, transform 0.15s; }
+  .latest-card:hover { border-color: var(--green); transform: translateY(-2px); }
+  .latest-thumb { height: 140px; border-bottom: 1px solid var(--line); }
+  .latest-body { padding: 18px 20px 20px; }
+  .latest-cat { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); }
+  .latest-card h3 { font-family: var(--font-display); font-size: 16.5px; font-weight: 700; letter-spacing: -0.015em; margin: 8px 0; line-height: 1.3; }
+  .latest-card p { font-size: 13px; color: var(--text-dim); line-height: 1.55; }
+
+  @media (max-width: 1000px) {
+    .monitor-grid { grid-template-columns: 1fr; }
+    .latest-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .manual-grid { grid-template-columns: 1fr; gap: 22px; padding: 26px 24px; }
+  }
+  @media (max-width: 900px) {
+    .hero-home { grid-template-columns: 1fr; padding-top: 40px; }
+    .try-section { grid-template-columns: 1fr; gap: 28px; padding-top: 24px; }
+  }
+  @media (max-width: 640px) {
+    .latest-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-cell { padding: 16px 14px; }
+    .stat-num { font-size: 24px; }
+    .usage-row { grid-template-columns: 110px 1fr 38px; }
+    .camp-row { grid-template-columns: 1.5fr 0.8fr 0.9fr 0.8fr 0.7fr; font-size: 11px; padding: 8px 6px; }
+    .hc-row { grid-template-columns: 78px 1fr auto; }
+  }
+</style>

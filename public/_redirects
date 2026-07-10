@@ -1,0 +1,56 @@
+# WordPress → Astro migration redirects (Cloudflare Pages)
+# CRITICAL: 394 URLs are already indexed. Every old URL must 301 to its new home.
+# Format:  /old-path  /new-path  301
+# Examples (replace with your real WordPress permalinks):
+# /2024/06/ev-charging-costs/        /blog/ev-charging-costs-at-home/   301
+# /category/home-charging/           /category/ev-home-charging/        301
+# /?p=123                            /blog/ev-charging-costs-at-home/   301
+
+# WordPress feed and system paths
+/feed         /rss.xml   301
+/feed/        /rss.xml   301
+/wp-admin/*   /          301
+/wp-login.php /          301
+
+# --- Indexed-URL consolidation redirects (v4.8.0, batch 1: smart-panel-vs cluster) ---
+# Variant slugs 301 to their consolidated canonical guide (root-level).
+/smart-panel-vs-breaker-box               /smart-panel-vs-traditional-panel/   301
+/smart-panels-vs-traditional-panels       /smart-panel-vs-traditional-panel/   301
+/smart-panel-vs-subpanel-vs-load-center   /smart-panel-vs-subpanel/            301
+/smart-panel-vs-smart-load-center         /smart-panel-vs-subpanel/            301
+/smart-panel-vs-load-management-system    /smart-panel-vs-load-management/     301
+/smart-panel-vs-load-controller           /smart-panel-vs-load-management/     301
+/smart-panel-vs-energy-management-system-ems  /smart-panel-vs-load-management/ 301
+
+# --- Indexed-URL consolidation redirects (v4.9.0, batch 3: smart-panel general + monitoring) ---
+/how-a-smart-panel-works                          /what-a-smart-panel-is/   301
+/how-smart-panels-work-homeowner-guide            /what-a-smart-panel-is/   301
+/smart-panel-pros-and-cons                        /do-you-need-a-smart-panel-a-clear-no-nonsense-homeowner-decision-guide/   301
+/best-smart-panels-2026-guide-top-options-for-modern-homes   /best-smart-panels-2026-guide/   301
+/emporia-vs-sense                                 /emporia-vs-sense-which-smart-energy-monitor-is-best-2026-guide/   301
+/emporia-vs-sense-guide                           /emporia-vs-sense-which-smart-energy-monitor-is-best-2026-guide/   301
+/smart-energy-monitoring-how-to-track-home-energy-use        /smart-energy-monitoring-2026-hub-guide/   301
+/how-to-track-your-homes-energy-use-with-smart-monitors      /smart-energy-monitoring-2026-hub-guide/   301
+/smart-panels-for-multi-ev-homes                  /smart-panels-for-ev-charging/   301
+/scheduling-with-smart-panels                     /smart-panels-for-ev-charging/   301
+/how-smart-panels-prevent-overloads               /smart-panels-for-whole-home-electrification-the-control-system-modern-homes-need/   301
+
+# --- v4.11.0 EV charging-cost cluster consolidation (18) ---
+/ev-charging-costs-what-youll-pay-at-home-2026-guide   /how-much-does-it-cost-to-charge-an-ev-at-home-2026-guide/   301
+/ev-home-charging-costs   /how-much-does-it-cost-to-charge-an-ev-at-home-2026-guide/   301
+/charging-costs-the-complete-homeowners-guide   /how-much-does-it-cost-to-charge-an-ev-at-home-2026-guide/   301
+/how-much-it-costs-to-charge-an-ev-per-year-2026-homeowner-guide   /how-much-it-costs-to-charge-an-ev-per-month-real-bills-explained/   301
+/why-your-charging-cost-is-higher-in-winter-2026-guide   /how-much-it-costs-to-charge-an-ev-in-winter-vs-summer-2026-guide/   301
+/why-your-ev-charging-cost-is-different-every-season   /how-much-it-costs-to-charge-an-ev-in-winter-vs-summer-2026-guide/   301
+/why-your-ev-charging-cost-is-lower-than-expected-2026-guide   /why-your-ev-charging-cost-is-higher-than-expected-2026-guide/   301
+/why-your-ev-charging-cost-changes-month-to-month-2026-guide-2   /why-your-ev-charging-cost-changes-month-to-month-2026-guide/   301
+/what-time-of-use-tou-charging-actually-is-simple-homeowner-explanation   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/peak-vs-off-peak-explained   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/how-to-save-money-with-tou   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/how-to-shift-ev-charging-to-off-peak   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/why-ev-owners-save-the-most-with-time-of-use-tou-charging   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/how-much-power-does-a-home-charger-use-2026-guide   /how-much-does-a-level-2-charger-add-to-your-electric-bill-2026-guide/   301
+/how-much-power-ev-charging-uses-beginner-guide   /how-much-does-a-level-2-charger-add-to-your-electric-bill-2026-guide/   301
+/how-fast-ev-charging-works-kw-kwh-amps-volts-explained   /how-much-does-a-level-2-charger-add-to-your-electric-bill-2026-guide/   301
+/how-to-track-ev-charging-costs   /how-to-lower-your-ev-charging-cost-2026-guide/   301
+/solar-ev-charging-cost-savings   /how-to-lower-your-ev-charging-cost-2026-guide/   301

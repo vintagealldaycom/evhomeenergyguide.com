@@ -1,0 +1,65 @@
+---
+import SEO from '../components/SEO.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  pubDate?: Date;
+  updatedDate?: Date;
+  noindex?: boolean;
+}
+const props = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/Favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <SEO {...props} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+  </head>
+  <body>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      // Light anti-scraper friction (see public/_headers for the real protections).
+      // Blocks naive right-click text harvesting bots; humans can still select text.
+      document.addEventListener('copy', (e) => {
+        const sel = window.getSelection()?.toString() ?? '';
+        if (sel.length > 1200) {
+          e.clipboardData?.setData(
+            'text/plain',
+            sel.slice(0, 1200) + `\n\nRead the full guide at ${location.href}`
+          );
+          e.preventDefault();
+        }
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  main { min-height: 60vh; }
+  :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
