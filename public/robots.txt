@@ -1,0 +1,74 @@
+# EV Home Energy Guide — robots.txt
+# © 2026 Vintage Allday LLC. All rights reserved.
+# All content is protected. Unauthorized scraping, harvesting, or reproduction is prohibited.
+# See /terms/ for full Terms of Use.
+
+# Standard search engines are welcome to index the site.
+User-agent: *
+Allow: /
+Disallow: /search.json
+Disallow: /rss.xml$
+
+# ---------------------------------------------------------------
+# AI / LLM training crawlers — blocked from harvesting content.
+# ---------------------------------------------------------------
+User-agent: GPTBot
+Disallow: /
+User-agent: OAI-SearchBot
+Disallow: /
+User-agent: ChatGPT-User
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: Claude-Web
+Disallow: /
+User-agent: anthropic-ai
+Disallow: /
+User-agent: Google-Extended
+Disallow: /
+User-agent: Applebot-Extended
+Disallow: /
+User-agent: Amazonbot
+Disallow: /
+User-agent: FacebookBot
+Disallow: /
+User-agent: Meta-ExternalAgent
+Disallow: /
+User-agent: PerplexityBot
+Disallow: /
+User-agent: Bytespider
+Disallow: /
+User-agent: Diffbot
+Disallow: /
+User-agent: Omgilibot
+Disallow: /
+User-agent: cohere-ai
+Disallow: /
+User-agent: ImagesiftBot
+Disallow: /
+User-agent: Timpibot
+Disallow: /
+
+# ---------------------------------------------------------------
+# Aggressive SEO / bulk-content scrapers — blocked.
+# ---------------------------------------------------------------
+User-agent: Scrapy
+Disallow: /
+User-agent: SemrushBot
+Disallow: /
+User-agent: AhrefsBot
+Disallow: /
+User-agent: DotBot
+Disallow: /
+User-agent: MJ12bot
+Disallow: /
+User-agent: PetalBot
+Disallow: /
+User-agent: DataForSeoBot
+Disallow: /
+User-agent: BLEXBot
+Disallow: /
+
+Sitemap: https://evhomeenergyguide.com/sitemap-index.xml

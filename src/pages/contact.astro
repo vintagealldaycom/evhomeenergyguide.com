@@ -1,0 +1,124 @@
+---
+import Base from '../layouts/Base.astro';
+import { site, disclaimer } from '../config/site';
+---
+
+<Base
+  title="Contact & Feedback"
+  description="Request general information or send feedback to EV Home Energy Guide. We share general educational information only — we can't answer personal questions."
+>
+  <section class="container contact-wrap">
+    <div class="contact-intro">
+      <h1>Contact us</h1>
+      <p>
+        Have a topic you'd like covered, or feedback on a guide or tool? Send it here.
+      </p>
+      <div class="contact-note" role="note">
+        <strong>Please note:</strong> {disclaimer}
+      </div>
+    </div>
+
+    <form id="contact-form" class="contact-form" novalidate>
+      <label>
+        What is this about?
+        <select id="cf-type" name="form">
+          <option value="request">Request information</option>
+          <option value="feedback">Feedback</option>
+        </select>
+      </label>
+      <label>
+        Name (optional)
+        <input type="text" id="cf-name" name="name" autocomplete="name" maxlength="120" />
+      </label>
+      <label>
+        Email <span class="req">required</span>
+        <input type="email" id="cf-email" name="email" autocomplete="email" required maxlength="200" />
+      </label>
+      <label>
+        Message <span class="req">required</span>
+        <textarea id="cf-message" name="message" rows="6" required maxlength="3000"></textarea>
+      </label>
+      <button type="submit" class="btn-submit" id="cf-submit">Send message</button>
+      <p id="cf-status" class="cf-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</Base>
+
+<script define:vars={{ endpoint: site.formEndpoint }}>
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('cf-status');
+  const btn = document.getElementById('cf-submit');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('cf-email').value.trim();
+    const message = document.getElementById('cf-message').value.trim();
+    if (!email || !message) {
+      status.textContent = 'Email and message are required.';
+      status.className = 'cf-status err';
+      return;
+    }
+    if (!endpoint || endpoint.startsWith('PASTE_')) {
+      status.textContent = 'The contact form is not connected yet. Set formEndpoint in src/config/site.ts.';
+      status.className = 'cf-status err';
+      return;
+    }
+
+    btn.disabled = true;
+    status.textContent = 'Sending…';
+    status.className = 'cf-status';
+
+    const type = document.getElementById('cf-type').value;
+    const params = new URLSearchParams({
+      form: type,
+      email,
+      message,
+    });
+    if (type === 'request') {
+      params.set('name', document.getElementById('cf-name').value.trim() || 'Not provided');
+    } else {
+      params.set('type', 'Site feedback');
+    }
+
+    try {
+      const res = await fetch(endpoint + '?' + params.toString(), { method: 'GET' });
+      const data = await res.json();
+      if (data.status === 'success' || res.ok) {
+        status.textContent = 'Message sent. Thanks — we read everything, even though we can\u2019t reply to personal questions.';
+        status.className = 'cf-status ok';
+        form.reset();
+      } else {
+        throw new Error(data.message || 'Send failed');
+      }
+    } catch {
+      status.textContent = 'Something went wrong sending your message. Please try again in a minute.';
+      status.className = 'cf-status err';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .contact-wrap { display: grid; grid-template-columns: 1fr 1.2fr; gap: 48px; padding: 56px 0; max-width: 1100px; }
+  .contact-intro h1 { font-family: var(--font-display); font-size: clamp(30px, 4vw, 44px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 14px; }
+  .contact-intro > p { color: var(--text-mid); font-size: 15.5px; line-height: 1.65; margin-bottom: 22px; }
+  .contact-note { padding: 16px 18px; border: 1px solid var(--bg-4); border-radius: var(--radius-sm); background: var(--bg-1); font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
+  .contact-note strong { color: var(--amber); }
+  .contact-form { display: flex; flex-direction: column; gap: 16px; }
+  .contact-form label { display: flex; flex-direction: column; gap: 7px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+  .req { color: var(--green); font-size: 10px; }
+  .contact-form input, .contact-form select, .contact-form textarea {
+    background: var(--bg-3); border: 1px solid var(--bg-4); border-radius: var(--radius-sm);
+    color: var(--text); font-family: var(--font-body); font-size: 15px; padding: 12px 14px;
+  }
+  .contact-form textarea { resize: vertical; }
+  .contact-form :is(input, select, textarea):focus { outline: 2px solid var(--green); border-color: transparent; }
+  .btn-submit { align-self: flex-start; background: var(--green); color: #06220f; font-weight: 700; font-size: 14.5px; padding: 13px 28px; border-radius: 100px; transition: background 0.15s; }
+  .btn-submit:hover { background: var(--green-bright); }
+  .btn-submit:disabled { opacity: 0.6; cursor: wait; }
+  .cf-status { font-size: 13.5px; min-height: 20px; }
+  .cf-status.ok { color: var(--green); }
+  .cf-status.err { color: #f87171; }
+  @media (max-width: 820px) { .contact-wrap { grid-template-columns: 1fr; gap: 28px; } }
+</style>

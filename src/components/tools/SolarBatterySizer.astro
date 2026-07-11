@@ -1,0 +1,67 @@
+---
+// Drop into any page or article with <SolarBatterySizer />
+---
+<div class="tool" id="solar-sizer-tool">
+  <div class="tool-head">
+    <span class="tool-badge">Simulator</span>
+    <h3>Solar & Battery Backup Sizer</h3>
+    <p>Estimate the solar array and battery capacity to cover your home's usage.</p>
+  </div>
+
+  <div class="tool-grid">
+    <label>
+      Monthly usage (kWh)
+      <input type="number" id="ss-usage" value="900" min="100" max="5000" step="50" inputmode="numeric" />
+    </label>
+    <label>
+      Peak sun hours / day
+      <input type="number" id="ss-sun" value="4.2" min="2" max="7" step="0.1" inputmode="decimal" />
+    </label>
+    <label>
+      Backup coverage (% of load)
+      <input type="number" id="ss-cover" value="60" min="10" max="100" step="5" inputmode="numeric" />
+    </label>
+    <label>
+      Days of backup wanted
+      <input type="number" id="ss-days" value="1" min="0.5" max="5" step="0.5" inputmode="decimal" />
+    </label>
+  </div>
+
+  <div class="tool-results" aria-live="polite">
+    <div class="result-cell">
+      <span class="result-num" id="ss-array">— kW</span>
+      <span class="result-label">Suggested solar array</span>
+    </div>
+    <div class="result-cell">
+      <span class="result-num" id="ss-batt">— kWh</span>
+      <span class="result-label">Suggested battery bank</span>
+    </div>
+    <div class="result-cell">
+      <span class="result-num" id="ss-daily">— kWh</span>
+      <span class="result-label">Your daily usage</span>
+    </div>
+  </div>
+  <p class="tool-note">Rough sizing for learning purposes only — a licensed installer must size a real system for your home, roof, and local code.</p>
+</div>
+
+<script>
+  function calcSolar() {
+    const v = (id: string) => parseFloat((document.getElementById(id) as HTMLInputElement)?.value) || 0;
+    const usage = v('ss-usage');
+    const sun = Math.max(v('ss-sun'), 0.1);
+    const cover = v('ss-cover') / 100;
+    const days = v('ss-days');
+
+    const daily = usage / 30;
+    // 0.8 derate for real-world system losses; 0.9 usable depth of discharge
+    const arrayKw = daily / sun / 0.8;
+    const battKwh = (daily * cover * days) / 0.9;
+
+    const set = (id: string, t: string) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+    set('ss-array', arrayKw.toFixed(1) + ' kW');
+    set('ss-batt', battKwh.toFixed(1) + ' kWh');
+    set('ss-daily', daily.toFixed(1) + ' kWh');
+  }
+  document.querySelectorAll('#solar-sizer-tool input').forEach((i) => i.addEventListener('input', calcSolar));
+  calcSolar();
+</script>

@@ -1,0 +1,20 @@
+---
+// Root-level guide pages: /<slug>/
+// These are fresh premium rewrites of already-indexed WordPress URLs, kept at
+// their original root path to preserve Google rankings. The original 90 blog
+// articles remain at /blog/<slug>/ via src/pages/blog/[...slug].astro.
+import { getCollection, render } from 'astro:content';
+import Article from '../layouts/Article.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('guides', ({ data }) => !data.draft);
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<Article {entry} {headings} body={entry.body} collection="guides" basePath="/">
+  <Content />
+</Article>

@@ -1,0 +1,66 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ChargingCostCalculator from '../../../components/tools/ChargingCostCalculator.astro';
+import ShareBar from '../../../components/ShareBar.astro';
+import { CALC_BASE } from '../../../config/tools';
+---
+
+<Base
+  title="EV Home Charging Cost Calculator"
+  description="Free EV home charging cost calculator. Estimate your full-charge cost, monthly charging bill, and cost per mile from your real electricity rate (¢/kWh), battery size, and monthly miles."
+>
+  <section class="container calc-page">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href={`${CALC_BASE}/`}>Sim-Lab</a>
+      <span>/</span>
+      <span aria-current="page">EV Home Charging Cost</span>
+    </nav>
+
+    <header class="calc-head">
+      <span class="calc-eyebrow">EV Charging · Calculator</span>
+      <h1>EV Home Charging Cost Calculator</h1>
+      <p>
+        Most drivers overestimate what it costs to charge at home. Enter your battery size,
+        your electricity rate, and your monthly miles to see your real cost per full charge,
+        your monthly charging bill, and your cost per mile — updated instantly.
+      </p>
+    </header>
+
+    <ShareBar label="EV Home Charging Cost Calculator" resultId="cc-share-result" />
+
+    <div class="calc-embed">
+      <ChargingCostCalculator />
+    </div>
+
+    <section class="calc-notes">
+      <h2>How to read your results</h2>
+      <ul>
+        <li><strong>Cost per full charge</strong> = usable battery (kWh) × your rate (¢/kWh), adjusted for charging losses.</li>
+        <li><strong>Cost per mile</strong> lets you compare directly against gasoline — home charging is typically 3–5¢ per mile.</li>
+        <li><strong>Time-of-use rates</strong> (charging overnight) can cut your monthly cost sharply. Check your utility's off-peak window.</li>
+      </ul>
+      <p class="calc-disclaim">Estimates only — actual costs vary with your utility tariff, charging losses, temperature, and driving. Verify with your electricity bill.</p>
+    </section>
+
+    <a href={`${CALC_BASE}/`} class="calc-back">← Back to Sim-Lab</a>
+  </section>
+</Base>
+
+<style>
+  .calc-page { max-width: 960px; padding: 40px 0 24px; }
+  .crumbs { display: flex; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 22px; }
+  .crumbs a { color: var(--green); }
+  .calc-head { margin-bottom: 22px; }
+  .calc-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green); }
+  .calc-head h1 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -0.03em; margin: 10px 0 12px; }
+  .calc-head p { font-size: 15.5px; color: var(--text-mid); line-height: 1.65; max-width: 680px; }
+  .calc-embed { margin: 22px 0 8px; }
+  .calc-embed :global(.tool) { margin: 0; }
+  .calc-notes { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .calc-notes h2 { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .calc-notes ul { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .calc-notes li { font-size: 14px; color: var(--text-mid); line-height: 1.6; padding-left: 16px; border-left: 2px solid var(--line); }
+  .calc-notes strong { color: var(--text); }
+  .calc-disclaim { font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
+  .calc-back { display: inline-block; margin-top: 28px; font-size: 13.5px; font-weight: 600; color: var(--green); }
+</style>

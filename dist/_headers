@@ -1,0 +1,13 @@
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Robots-Tag: noai, noimageai
+  X-Copyright: © 2026 Vintage Allday LLC. All rights reserved. Unauthorized scraping prohibited.
+
+# Long-cache immutable build assets
+/Logo.png
+  Cache-Control: public, max-age=604800
+/Favicon.png
+  Cache-Control: public, max-age=604800

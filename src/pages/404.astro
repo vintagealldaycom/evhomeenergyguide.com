@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import { pillars } from '../config/site';
+---
+
+<Base title="Page not found" description="This page doesn't exist or has moved. Browse the EV Home Energy Guide category hubs to find what you need." noindex>
+  <section class="container nf-wrap">
+    <p class="nf-code">404</p>
+    <h1>This page lost its charge.</h1>
+    <p>It may have moved during our migration. Try one of the category hubs:</p>
+    <div class="nf-links">
+      {pillars.map((p) => <a href={`/category/${p.slug}/`}>{p.title}</a>)}
+      <a href="/en/sim-lab/">Sim-Lab</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf-wrap { text-align: center; padding: 96px 32px; max-width: 640px; }
+  .nf-code { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.3em; color: var(--green); margin-bottom: 14px; }
+  .nf-wrap h1 { font-family: var(--font-display); font-size: clamp(30px, 4vw, 46px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+  .nf-wrap > p { color: var(--text-mid); margin-bottom: 28px; }
+  .nf-links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .nf-links a { padding: 10px 18px; border: 1px solid var(--bg-4); border-radius: 100px; font-size: 13.5px; color: var(--text-mid); }
+  .nf-links a:hover { border-color: var(--green); color: var(--green); }
+</style>

@@ -1,0 +1,89 @@
+# WordPress → Astro migration redirects (Cloudflare Pages)
+# CRITICAL: 394 URLs are already indexed. Every old URL must 301 to its new home.
+# Format:  /old-path  /new-path  301
+# Examples (replace with your real WordPress permalinks):
+# /2024/06/ev-charging-costs/        /blog/ev-charging-costs-at-home/   301
+# /category/home-charging/           /category/ev-home-charging/        301
+# /?p=123                            /blog/ev-charging-costs-at-home/   301
+
+# WordPress feed and system paths
+/feed         /rss.xml   301
+/feed/        /rss.xml   301
+/wp-admin/*   /          301
+/wp-login.php /          301
+
+# --- Indexed-URL consolidation redirects (v4.8.0, batch 1: smart-panel-vs cluster) ---
+# Variant slugs 301 to their consolidated canonical guide (root-level).
+/smart-panel-vs-breaker-box               /smart-panel-vs-traditional-panel/   301
+/smart-panels-vs-traditional-panels       /smart-panel-vs-traditional-panel/   301
+/smart-panel-vs-subpanel-vs-load-center   /smart-panel-vs-subpanel/            301
+/smart-panel-vs-smart-load-center         /smart-panel-vs-subpanel/            301
+/smart-panel-vs-load-management-system    /smart-panel-vs-load-management/     301
+/smart-panel-vs-load-controller           /smart-panel-vs-load-management/     301
+/smart-panel-vs-energy-management-system-ems  /smart-panel-vs-load-management/ 301
+
+# --- Indexed-URL consolidation redirects (v4.9.0, batch 3: smart-panel general + monitoring) ---
+/how-a-smart-panel-works                          /what-a-smart-panel-is/   301
+/how-smart-panels-work-homeowner-guide            /what-a-smart-panel-is/   301
+/smart-panel-pros-and-cons                        /do-you-need-a-smart-panel-a-clear-no-nonsense-homeowner-decision-guide/   301
+/best-smart-panels-2026-guide-top-options-for-modern-homes   /best-smart-panels-2026-guide/   301
+/emporia-vs-sense                                 /emporia-vs-sense-which-smart-energy-monitor-is-best-2026-guide/   301
+/emporia-vs-sense-guide                           /emporia-vs-sense-which-smart-energy-monitor-is-best-2026-guide/   301
+/smart-energy-monitoring-how-to-track-home-energy-use        /smart-energy-monitoring-2026-hub-guide/   301
+/how-to-track-your-homes-energy-use-with-smart-monitors      /smart-energy-monitoring-2026-hub-guide/   301
+/smart-panels-for-multi-ev-homes                  /smart-panels-for-ev-charging/   301
+/scheduling-with-smart-panels                     /smart-panels-for-ev-charging/   301
+/how-smart-panels-prevent-overloads               /smart-panels-for-whole-home-electrification-the-control-system-modern-homes-need/   301
+
+# --- v4.11.0 EV charging-cost cluster consolidation (18) ---
+/ev-charging-costs-what-youll-pay-at-home-2026-guide   /how-much-does-it-cost-to-charge-an-ev-at-home-2026-guide/   301
+/ev-home-charging-costs   /how-much-does-it-cost-to-charge-an-ev-at-home-2026-guide/   301
+/charging-costs-the-complete-homeowners-guide   /how-much-does-it-cost-to-charge-an-ev-at-home-2026-guide/   301
+/how-much-it-costs-to-charge-an-ev-per-year-2026-homeowner-guide   /how-much-it-costs-to-charge-an-ev-per-month-real-bills-explained/   301
+/why-your-charging-cost-is-higher-in-winter-2026-guide   /how-much-it-costs-to-charge-an-ev-in-winter-vs-summer-2026-guide/   301
+/why-your-ev-charging-cost-is-different-every-season   /how-much-it-costs-to-charge-an-ev-in-winter-vs-summer-2026-guide/   301
+/why-your-ev-charging-cost-is-lower-than-expected-2026-guide   /why-your-ev-charging-cost-is-higher-than-expected-2026-guide/   301
+/why-your-ev-charging-cost-changes-month-to-month-2026-guide-2   /why-your-ev-charging-cost-changes-month-to-month-2026-guide/   301
+/what-time-of-use-tou-charging-actually-is-simple-homeowner-explanation   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/peak-vs-off-peak-explained   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/how-to-save-money-with-tou   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/how-to-shift-ev-charging-to-off-peak   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/why-ev-owners-save-the-most-with-time-of-use-tou-charging   /smart-charging-time-of-use-tou-2026-home-charging-optimization-guide/   301
+/how-much-power-does-a-home-charger-use-2026-guide   /how-much-does-a-level-2-charger-add-to-your-electric-bill-2026-guide/   301
+/how-much-power-ev-charging-uses-beginner-guide   /how-much-does-a-level-2-charger-add-to-your-electric-bill-2026-guide/   301
+/how-fast-ev-charging-works-kw-kwh-amps-volts-explained   /how-much-does-a-level-2-charger-add-to-your-electric-bill-2026-guide/   301
+/how-to-track-ev-charging-costs   /how-to-lower-your-ev-charging-cost-2026-guide/   301
+/solar-ev-charging-cost-savings   /how-to-lower-your-ev-charging-cost-2026-guide/   301
+
+# v4.12.0 cordless tools, batteries & workshop batch - consolidations
+/cleaning-maintenance-complete-garage-care-hub   /tools-garage-complete-homeowner-guide/   301
+/the-annual-garage-deep-clean-blueprint-full-garage-reset   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-door-and-tracks   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-floor-concrete-epoxy-and-polyurea   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-walls-baseboards-and-lower-perimeter-salt-dirt-and-moisture-zones   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-windows-doors-and-weather-seals   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-lighting-led-fluorescent-and-task-lighting   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-work-lights-extension-cords-and-portable-power-accessories   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-dehumidifiers-fans-and-airflow-systems   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-fan-air-purifier-or-ventilation-system   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-heater-or-portable-heating-system   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-shelving-and-storage-systems   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-shelving-bins-totes-and-long-term-storage-containers   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-ceiling-storage-overhead-racks-and-hanging-systems   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-sink-utility-basin-or-wash-station   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-trash-recycling-and-waste-management-area   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-cleaning-tools-brooms-mops-squeegees-brushes   /tools-garage-complete-homeowner-guide/   301
+/how-to-clean-and-maintain-your-garage-chemicals-cleaners-and-supply-shelf-shelf-life-safety-organization   /tools-garage-complete-homeowner-guide/   301
+/how-to-recycle-battery-powered-tools-lithium-batteriesguide   /battery-tool-safety-for-homeowners-essential-guide/   301
+/best-practices-for-charging-multiple-batteries-at-once   /how-to-charge-cordless-tool-batteries-safely/   301
+/how-to-add-ventilation-for-safe-battery-charging   /how-to-charge-cordless-tool-batteries-safely/   301
+/how-to-build-a-safe-charging-wall-for-battery-tools   /how-to-set-up-a-charging-station-for-cordless-tools/   301
+/how-to-set-up-a-clean-tangle-free-charging-area-in-a-small-garage   /how-to-set-up-a-charging-station-for-cordless-tools/   301
+/how-to-clean-and-maintain-your-garage-pegboard-slatwall-and-tool-mounting-systems   /how-to-set-up-a-charging-station-for-cordless-tools/   301
+/how-to-clean-and-maintain-your-garage-tool-chests-drawers-and-rolling-cabinets   /how-to-store-cordless-power-tools-safely-battery-first-approach/   301
+/how-to-clean-and-maintain-your-garage-tools-and-equipment   /cordless-tool-maintenance-for-homeowners/   301
+/how-to-clean-power-tools-the-right-way-dust-debris-and-safe-wipe-down-methods   /cordless-tool-maintenance-for-homeowners/   301
+/best-battery-powered-tools-every-homeowner-should-own   /cordless-power-tools-what-homeowners-actually-need/   301
+/how-to-choose-the-right-battery-platform-ego-ryobi-dewalt-etc   /how-to-choose-the-right-battery-platform-homeowner-guide/   301
+/battery-vs-gas-lawn-mowers-pros-cons-costs   /battery-mower-vs-gas-mower-which-is-better-for-homeowners/   301
+/how-to-organize-a-small-garage-homeowner-guide   /how-to-use-power-tools-safely-in-a-small-garage-space-lighting-and-workflow-tips/   301

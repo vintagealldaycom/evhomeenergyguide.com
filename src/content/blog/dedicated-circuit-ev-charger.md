@@ -1,0 +1,91 @@
+---
+title: "What Is a Dedicated Circuit, and Why Does Your Charger Need One?"
+description: "Your EV charger needs a circuit all to itself. Learn what a dedicated circuit is, why continuous charging load demands one, and how to spot a bad install."
+pubDate: 2026-07-08
+category: ev-home-charging
+subcategory: "Charging Basics"
+tags: [charging-basics, dedicated-circuit, electrical, home-charging]
+draft: false
+---
+
+When you get a home charger installed, the electrician will insist on a "dedicated circuit," and it'll cost more than tapping into existing wiring. If you've ever wondered whether that's necessary or just upselling, here's the honest answer: it's necessary, it's required by code, and understanding why turns a mysterious line item into an obvious safety decision.
+
+## What "dedicated" actually means
+
+A **circuit** is a path of wiring running from a breaker in your electrical panel out to wherever it powers things. Most household circuits are *shared* — one circuit feeds several outlets and lights around a room. A **dedicated circuit** serves exactly one thing: it runs from its own breaker, through its own wire, to a single destination, with nothing else drawing from it.
+
+<div class="art-viz">
+  <span class="vz-title">Shared vs. dedicated circuit</span>
+  <div class="vz-versus">
+    <div class="vz-side"><h4>🔗 Shared circuit</h4><ul><li>One breaker feeds many outlets</li><li>Fine for lamps, phone chargers, TVs</li><li>Total load is small and intermittent</li><li>Wrong for an EV charger</li></ul></div>
+    <span class="vz-vs">VS</span>
+    <div class="vz-side win"><h4>⚡ Dedicated circuit</h4><ul><li>One breaker, one wire, one device</li><li>Required for big continuous loads</li><li>Your EV charger — and your dryer, range, AC</li><li>Right for an EV charger</li></ul></div>
+  </div>
+</div>
+
+Your EV charger joins the short list of appliances that always get their own dedicated circuit — the same club as your electric dryer, oven, and central AC. They're all there for the same reason.
+
+## Why EV charging demands it
+
+Two facts about EV charging make a dedicated circuit non-negotiable:
+
+**It's a big load.** A Level 2 charger pulls 30–48 amps — a substantial fraction of an entire home's capacity. Sharing that with anything else risks overloading the circuit the moment both draw at once.
+
+**It's a *continuous* load.** This is the part that makes EV charging special. Your charger pulls near its maximum for hours on end — six, eight, ten hours a night. Almost nothing else in your home does that. A dryer runs 40 minutes; a microwave, three. Electrical code has a specific rule for continuous loads (defined as three hours or more): the circuit must be sized so the device uses no more than **80% of the breaker's rating**, leaving headroom so nothing runs at its limit for hours.
+
+<div class="art-viz">
+  <span class="vz-title">Why continuous load needs headroom (the 80% rule)</span>
+  <div class="vz-bars">
+    <div class="vz-row"><span class="vz-label">32A charger → 40A dedicated circuit</span><span class="vz-track"><span class="vz-fill" style="width:80%"></span></span><span class="vz-val">80% — correct</span></div>
+    <div class="vz-row"><span class="vz-label">40A charger → 50A dedicated circuit</span><span class="vz-track"><span class="vz-fill" style="width:80%"></span></span><span class="vz-val">80% — correct</span></div>
+    <div class="vz-row"><span class="vz-label">48A charger → 60A dedicated circuit</span><span class="vz-track"><span class="vz-fill" style="width:80%"></span></span><span class="vz-val">80% — correct</span></div>
+  </div>
+  <span class="vz-note">The circuit is always rated above the charger's draw. A shared circuit can't guarantee that headroom, because you can't predict what else gets plugged in.</span>
+</div>
+
+Put those together and a shared circuit is a fire risk: add an EV charger's hours-long near-maximum draw to a circuit already running other things, and you get overheated wiring, chronic breaker trips, or worse. The dedicated circuit exists so that never happens.
+
+## What a proper dedicated circuit includes
+
+<div class="art-viz">
+  <div class="vz-flow">
+    <div class="vz-step"><div><strong>Its own breaker</strong><span>A correctly sized double-pole breaker in your panel, serving only the charger.</span></div></div>
+    <div class="vz-step"><div><strong>Appropriately gauged wire</strong><span>Thick enough for the continuous current — heavier wire than shared 120V circuits use.</span></div></div>
+    <div class="vz-step"><div><strong>A single destination</strong><span>One receptacle or hardwire point for the charger, nothing else on the run.</span></div></div>
+    <div class="vz-step"><div><strong>Panel capacity to support it</strong><span>Your panel must have room and enough total capacity — sometimes the real cost driver.</span></div></div>
+  </div>
+</div>
+
+That last point is often where installation cost comes from: if your panel is full or your home's total electrical capacity is tight, the electrician may need to add capacity or manage load — a real expense, but one that protects your whole house.
+
+## Signs of a circuit that isn't truly dedicated
+
+If you inherited a charger install or suspect a shortcut was taken, watch for these:
+
+<div class="callout warn"><span class="co-icon">⚠</span><div><strong>Red flags:</strong> the breaker trips when charging coincides with another appliance (something's sharing the circuit); lights flicker elsewhere when charging starts; the charger is plugged into a regular outlet on a shared room circuit rather than its own; or you can't find a single dedicated breaker for it in the panel. Any of these means a call to a licensed electrician.</div></div>
+
+A "dedicated circuit" that secretly also feeds the garage freezer isn't dedicated — and it produces exactly the mysterious, intermittent trips we cover in [why your charger works on one circuit but not another](/blog/charger-works-on-one-circuit-not-another/).
+
+## The DIY temptation (and why to resist it)
+
+It's tempting to save money by running your own circuit or reusing an old dryer outlet. Resist it, for reasons beyond legality (though [permits and code](/blog/ev-charger-installation-permit/) are real): a dedicated EV circuit involves correctly sizing wire and breaker for continuous load, verifying panel capacity, proper terminations torqued to spec, and often GFCI considerations. Getting any of it wrong doesn't fail obviously — it fails slowly, as heat, months later, which is the origin story of most [melted outlets](/blog/melted-or-discolored-plug/) and [burning smells](/blog/burning-smell-near-ev-charger/). This is the definition of a job worth paying a licensed electrician to do right.
+
+The dedicated circuit isn't an upsell — it's the foundation that makes everything else about home charging safe. One breaker, one wire, one charger, with headroom built in for the long hours it'll run. It's the least glamorous part of your EV setup and quietly the most important.
+
+## The panel-capacity conversation
+
+The part of a dedicated-circuit install that surprises people isn't the wire or the breaker — it's the panel. Your home's electrical panel has a finite total capacity, and adding a large continuous EV load makes the electrician check whether there's genuinely room. Older or smaller panels, or homes already running electric heat, an electric range, and central AC, may be near their limit — in which case the fix is a load calculation and possibly a panel upgrade or a load-management device that prevents the charger from drawing full power when other big loads are running. This is why two identical charger installs can cost wildly different amounts: one home has ample panel headroom, the next needs capacity work. It's not the electrician padding the bill — it's the difference between what your specific panel can safely support.
+
+## Why cutting this corner is the expensive mistake
+
+Of all the places to economize on an EV setup, the dedicated circuit is the worst, because its failures are hidden and dangerous rather than obvious and inconvenient. A shared or undersized circuit doesn't fail by refusing to charge — it fails by running hot inside your walls for months, degrading connections and insulation until it trips chronically, melts a connector, or starts a fire. You won't see it coming, because the symptoms build slowly out of sight. A properly designed dedicated circuit, by contrast, simply works quietly for decades. The few hundred dollars that separates "done right" from "cheaped out" buys you the single most important safety margin in your entire charging setup — headroom on a circuit that will run near its limit for thousands of hours over its life. It's the definition of money well spent.
+
+## Quick answers
+
+**Can my charger share a circuit with the garage lights?** No — code requires a dedicated circuit for good reason, and the lights flickering when charging starts is the symptom of exactly the problem it prevents.
+
+**Is a 240V dryer circuit "dedicated enough"?** It's dedicated to the *dryer*. Swapping loads may violate its sizing and code — have an electrician evaluate rather than assume.
+
+**What if my panel is full?** Options include tandem breakers where permitted, load-management devices, or a panel upgrade — an electrician's load calculation decides.
+
+*Educational content, not professional electrical advice. Circuit design and installation are licensed-electrician work. Planning a setup? Size it in the [Sim-Lab](/en/sim-lab/).*

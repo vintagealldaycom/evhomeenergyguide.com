@@ -1,0 +1,96 @@
+---
+import { site, author } from '../config/site';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  pubDate?: Date;
+  updatedDate?: Date;
+  noindex?: boolean;
+  bodyText?: string; // fallback source for auto-description
+}
+
+const {
+  title,
+  description,
+  image = '/Logo.png',
+  type = 'website',
+  pubDate,
+  updatedDate,
+  noindex = false,
+  bodyText = '',
+} = Astro.props;
+
+// Automated meta title: append brand once, never twice
+const siteTitle = title.includes(site.shortName) ? title : `${title} | ${site.name}`;
+
+// Auto-generated description: fall back to first 160 chars of body text
+const metaDescription =
+  description || bodyText.replace(/\s+/g, ' ').trim().slice(0, 157) + '…' || site.description.slice(0, 160);
+
+// Canonical URL generated from the file path — never broken
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? site.url);
+const ogImage = new URL(image, Astro.site ?? site.url);
+
+// JSON-LD: Person schema on every page (E-E-A-T), Article schema on posts
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: author.name,
+  jobTitle: author.title,
+  url: author.url,
+  sameAs: author.sameAs,
+};
+
+const articleSchema =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: title,
+        description: metaDescription,
+        image: ogImage.href,
+        datePublished: pubDate?.toISOString(),
+        dateModified: (updatedDate ?? pubDate)?.toISOString(),
+        author: { '@type': 'Person', name: author.name, url: author.url },
+        publisher: { '@type': 'Organization', name: site.name, url: site.url },
+        mainEntityOfPage: canonicalURL.href,
+      }
+    : null;
+
+const websiteSchema =
+  type === 'website'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: site.name,
+        url: site.url,
+        description: site.description,
+      }
+    : null;
+---
+
+<title>{siteTitle}</title>
+<meta name="description" content={metaDescription} />
+<link rel="canonical" href={canonicalURL} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={site.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={metaDescription} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:image" content={ogImage} />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={metaDescription} />
+<meta name="twitter:image" content={ogImage} />
+
+<script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+{articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
+{websiteSchema && <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />}

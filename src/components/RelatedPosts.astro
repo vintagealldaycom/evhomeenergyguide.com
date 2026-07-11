@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props { currentSlug: string; category: string; tags: string[]; collection?: 'blog' | 'guides'; basePath?: string }
+const { currentSlug, category, tags, collection = 'blog', basePath = '/blog/' } = Astro.props;
+
+const all = await getCollection(collection, (p) => !p.data.draft && p.id !== currentSlug);
+
+// Score by shared tags, then same category
+const related = all
+  .map((p) => ({
+    post: p,
+    score:
+      p.data.tags.filter((t) => tags.includes(t)).length * 2 +
+      (p.data.category === category ? 1 : 0),
+  }))
+  .filter((r) => r.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 3)
+  .map((r) => r.post);
+---
+
+{related.length > 0 && (
+  <aside class="related" aria-label="Related guides">
+    <h3>Keep learning</h3>
+    <div class="related-grid">
+      {related.map((p) => (
+        <a href={`${basePath}${p.id}/`} class="related-card">
+          <span class="related-cat">{p.data.subcategory ?? p.data.category}</span>
+          <span class="related-title">{p.data.title}</span>
+        </a>
+      ))}
+    </div>
+  </aside>
+)}
+
+<style>
+  .related { margin-top: 56px; }
+  .related h3 { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 18px; }
+  .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .related-card {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 18px 20px; background: var(--bg-1);
+    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .related-card:hover { border-color: var(--green); transform: translateY(-2px); }
+  .related-cat { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); }
+  .related-title { font-weight: 600; font-size: 14.5px; line-height: 1.4; }
+  @media (max-width: 720px) { .related-grid { grid-template-columns: 1fr; } }
+</style>

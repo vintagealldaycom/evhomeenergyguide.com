@@ -1,0 +1,80 @@
+---
+// Reusable share + bookmark bar. Used on calculator pages (and, in Batch 3,
+// the homepage calculator with a live result string).
+// Props:
+//   label     – short share message prefix (e.g. tool name)
+//   resultId  – optional DOM id whose textContent is appended to the share text
+//               (lets tools share the user's computed result — "… ~$32/mo …")
+interface Props {
+  label?: string;
+  resultId?: string;
+}
+const { label = 'EV Home Energy Guide', resultId = '' } = Astro.props;
+---
+
+<div class="sharebar" data-label={label} data-result-id={resultId}>
+  <span class="sharebar-lead">Share this</span>
+  <button type="button" class="sb-btn" data-act="share" aria-label="Share">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+    Share
+  </button>
+  <button type="button" class="sb-btn" data-act="copy" aria-label="Copy link">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+    Copy link
+  </button>
+  <button type="button" class="sb-btn" data-act="bookmark" aria-label="Bookmark this page">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>
+    Bookmark
+  </button>
+  <span class="sb-status" role="status" aria-live="polite"></span>
+</div>
+
+<style>
+  .sharebar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 18px; background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .sharebar-lead { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-right: 4px; }
+  .sb-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border: 1px solid var(--bg-4); border-radius: 100px; font-size: 13px; font-weight: 600; color: var(--text-mid); transition: border-color 0.15s, color 0.15s, background 0.15s; }
+  .sb-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+  .sb-status { font-size: 12px; color: var(--green); min-height: 14px; }
+</style>
+
+<script>
+  function buildShare(bar: HTMLElement) {
+    const label = bar.dataset.label || document.title;
+    const resultId = bar.dataset.resultId || '';
+    const url = location.href;
+    let text = label;
+    if (resultId) {
+      const el = document.getElementById(resultId);
+      const val = el?.textContent?.trim();
+      if (val) text = `${label}: ${val}`;
+    }
+    return { title: label, text: `${text} — via EVHEG`, url };
+  }
+
+  document.querySelectorAll<HTMLElement>('.sharebar').forEach((bar) => {
+    const status = bar.querySelector('.sb-status') as HTMLElement | null;
+    const say = (m: string) => { if (status) { status.textContent = m; setTimeout(() => (status.textContent = ''), 2500); } };
+
+    bar.querySelectorAll<HTMLButtonElement>('.sb-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const act = btn.dataset.act;
+        const data = buildShare(bar);
+
+        if (act === 'share') {
+          if (navigator.share) {
+            try { await navigator.share(data); } catch { /* user cancelled */ }
+          } else {
+            try { await navigator.clipboard.writeText(`${data.text} ${data.url}`); say('Link copied ✓'); }
+            catch { say('Copy failed'); }
+          }
+        } else if (act === 'copy') {
+          try { await navigator.clipboard.writeText(`${data.text} ${data.url}`); say('Link copied ✓'); }
+          catch { say('Copy failed'); }
+        } else if (act === 'bookmark') {
+          const key = navigator.platform.toLowerCase().includes('mac') ? '⌘+D' : 'Ctrl+D';
+          say(`Press ${key} to bookmark`);
+        }
+      });
+    });
+  });
+</script>

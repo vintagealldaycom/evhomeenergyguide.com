@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import { site, disclaimer } from '../config/site';
+const updated = 'July 5, 2026';
+---
+
+<Base
+  title="Disclaimer"
+  description={`Full disclaimer for ${site.name}: an educational initiative of ${site.company}. General information only — never professional, legal, electrical, or financial advice.`}
+>
+  <section class="container legal-wrap">
+    <h1>Disclaimer</h1>
+    <p class="legal-updated">Last Updated: {updated}</p>
+
+    <div class="disclaimer-callout" role="note">
+      <span class="disclaimer-callout-label">Important</span>
+      <p>{disclaimer}</p>
+    </div>
+
+    <h2>1. General Information Only</h2>
+    <p>The content provided on <strong>{site.name}</strong> is for general educational and informational purposes only. It is not intended to be, and should not be construed as, professional financial, legal, electrical, or investment advice.</p>
+
+    <h2>2. No Professional Relationship</h2>
+    <p>Your use of this website, including interaction with our calculators, simulators, and guides, does not create a professional advisor-client relationship between you and <strong>{site.company}</strong>, its founder (Louis F.), or its contributors. We are not acting as your electrical contractor, financial advisor, attorney, or professional consultant.</p>
+
+    <h2>3. Use at Your Own Risk</h2>
+    <p>The tools and information provided on this site are for self-learning. Any decisions you make based on this information are your sole responsibility. We strongly recommend that you conduct your own research and consult with a qualified, licensed professional — such as a certified electrician, financial planner, or attorney — before making any significant financial, legal, or home infrastructure commitments.</p>
+
+    <h2>4. Accuracy and Completeness</h2>
+    <p>While we strive to ensure that the information on <strong>{site.name}</strong> is accurate and up to date, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, or suitability of the information, tools, or related graphics contained on the website. Any reliance you place on such information is strictly at your own risk.</p>
+
+    <h2>5. Software &amp; Tool Accuracy</h2>
+    <p>Our interactive simulators, calculators, and educational tools are provided for estimation and educational purposes only. While we work diligently to ensure the logic and math behind these tools are accurate, software may occasionally contain bugs, calculation errors, or inaccuracies. These tools do not provide exact projections and should not be used as the sole basis for decisions. Users are encouraged to verify important calculations independently.</p>
+
+    <h2>6. Third-Party Links</h2>
+    <p><strong>{site.name}</strong> may contain links to external websites that are not under our control. We have no control over the nature, content, and availability of those sites. The inclusion of any links does not necessarily imply a recommendation or endorse the views expressed within them.</p>
+
+    <h2>7. Limitation of Liability</h2>
+    <p>In no event will <strong>{site.company}</strong>, its founder, or contributors be liable for any loss or damage, including without limitation, indirect or consequential loss or damage, or any loss or damage whatsoever arising from loss of data or profits arising out of, or in connection with, the use of this website.</p>
+  </section>
+</Base>
+
+<style>
+  .legal-wrap { max-width: 720px; padding: 56px 32px; }
+  .legal-wrap h1 { font-family: var(--font-display); font-size: clamp(30px, 4vw, 44px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+  .legal-updated { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); margin-bottom: 24px; }
+  .disclaimer-callout {
+    display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px;
+    padding: 18px 22px; border: 1px solid rgba(251,191,36,0.32); border-left: 3px solid var(--amber);
+    border-radius: var(--radius-sm); background: rgba(251,191,36,0.06);
+  }
+  .disclaimer-callout-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); font-weight: 600; }
+  .disclaimer-callout p { color: var(--text-mid); font-size: 14px; line-height: 1.65; margin: 0; }
+  .legal-wrap h2 { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin: 28px 0 10px; }
+  .legal-wrap p { color: var(--text-mid); font-size: 14.5px; line-height: 1.7; margin-bottom: 12px; }
+  .legal-wrap strong { color: var(--text); }
+</style>

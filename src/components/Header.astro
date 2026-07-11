@@ -1,0 +1,202 @@
+---
+import { site, pillars } from '../config/site';
+const current = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="brand" aria-label={`${site.name} home`}>
+      <img src="/Logo-nav.png" alt="" width="54" height="54" loading="eager" />
+      <span class="brand-name">EV HOME ENERGY <em>GUIDE</em></span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      {pillars.map((p) => (
+        <a
+          href={`/category/${p.slug}/`}
+          class:list={['nav-link', { active: current.startsWith(`/category/${p.slug}`) }]}
+        >
+          {p.title}
+        </a>
+      ))}
+      <a href="/en/sim-lab/" class:list={['nav-link', { active: current.startsWith('/en/sim-lab') }]}>
+        Sim-Lab
+      </a>
+    </nav>
+
+    <div class="header-search" id="site-search">
+      <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="search-input" placeholder="Search guides & tools…" autocomplete="off" aria-label="Search guides and tools" />
+      <div class="search-results" id="search-results" hidden></div>
+    </div>
+
+    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden>
+    <div class="mobile-search">
+      <input type="search" id="search-input-m" placeholder="Search guides & tools…" autocomplete="off" aria-label="Search guides and tools" />
+      <div class="search-results" id="search-results-m" hidden></div>
+    </div>
+    {pillars.map((p) => (
+      <a
+        href={`/category/${p.slug}/`}
+        class:list={['mobile-link', { active: current.startsWith(`/category/${p.slug}`) }]}
+      >{p.title}</a>
+    ))}
+    <a href="/en/sim-lab/" class:list={['mobile-link', { active: current.startsWith('/en/sim-lab') }]}>Sim-Lab</a>
+    <a href="/about/" class:list={['mobile-link', { active: current.startsWith('/about') }]}>About</a>
+    <a href="/contact/" class:list={['mobile-link', { active: current.startsWith('/contact') }]}>Contact</a>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(18, 18, 18, 0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-inner {
+    display: flex; align-items: center; gap: 20px;
+    height: 84px; min-width: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; flex-shrink: 0; min-width: 0; }
+  .brand img { height: 54px; width: 54px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(74,222,128,0.35)); }
+  .brand-name { font-family: var(--font-display); font-size: 21px; font-weight: 800; letter-spacing: 0.06em; color: #f0ede4; white-space: nowrap; }
+  .brand-name em { font-style: normal; color: var(--green); }
+
+  .main-nav { display: flex; gap: 2px; align-items: center; margin-left: auto; }
+  .nav-link {
+    padding: 9px 13px; border-radius: 100px;
+    font-size: 13.5px; font-weight: 500; color: var(--text-mid);
+    transition: color 0.15s, background 0.15s; white-space: nowrap;
+  }
+  .nav-link:hover { color: var(--text); background: var(--bg-2); }
+  .nav-link.active { color: var(--green); background: var(--green-soft); }
+
+  .header-search { position: relative; flex-shrink: 0; }
+  .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events: none; }
+  .header-search input {
+    width: 210px; background: var(--bg-2); border: 1px solid var(--bg-4);
+    border-radius: 100px; color: var(--text); font-family: var(--font-body);
+    font-size: 13px; padding: 10px 14px 10px 36px; transition: width 0.2s, border-color 0.15s;
+  }
+  .header-search input:focus { outline: none; border-color: var(--green); }
+  .header-search input::placeholder { color: var(--text-faint); }
+
+  .search-results {
+    position: absolute; top: calc(100% + 8px); right: 0; width: 380px; max-height: 420px;
+    overflow-y: auto; background: var(--bg-1); border: 1px solid var(--bg-4);
+    border-radius: var(--radius-sm); box-shadow: 0 16px 48px rgba(0,0,0,0.5); z-index: 60;
+  }
+  .search-results :global(a) { display: block; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); }
+  .search-results :global(a:hover) { background: var(--bg-2); }
+  .search-results :global(.sr-type) { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; }
+  .search-results :global(.sr-type.guide) { color: var(--blue); }
+  .search-results :global(.sr-type.tool) { color: var(--green); }
+  .search-results :global(.sr-title) { display: block; font-weight: 600; font-size: 13.5px; margin-top: 3px; color: var(--text); }
+  .search-results :global(.sr-empty) { padding: 16px; font-size: 13px; color: var(--text-dim); }
+
+  .menu-toggle { display: none; flex-direction: column; gap: 5px; padding: 10px; }
+  .menu-toggle span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.2s, opacity 0.2s; }
+  .menu-toggle[aria-expanded='true'] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .menu-toggle[aria-expanded='true'] span:nth-child(2) { opacity: 0; }
+  .menu-toggle[aria-expanded='true'] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .mobile-nav {
+    display: none; flex-direction: column; border-top: 1px solid var(--line);
+    background: var(--bg-1); max-height: calc(100dvh - 68px); overflow-y: auto;
+    -webkit-overflow-scrolling: touch; padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  /* Update 4.3.2 — compact drawer: less vertical bulk, keeps 44px+ tap targets.
+     (.mobile-nav only renders ≤1200px, so these rules never affect desktop.) */
+  .mobile-search { position: relative; padding: 10px 18px; border-bottom: 1px solid var(--line-soft); }
+  .mobile-search input { width: 100%; background: var(--bg-3); border: 1px solid var(--bg-4); border-radius: 100px; color: var(--text); font-size: 16px; padding: 10px 16px; }
+  .mobile-search input:focus { outline: none; border-color: var(--green); }
+  .mobile-search .search-results { left: 18px; right: 18px; width: auto; }
+  .mobile-link {
+    display: flex; align-items: center; min-height: 44px; padding: 10px 18px;
+    border-bottom: 1px solid var(--line-soft); font-size: 15px; font-weight: 500;
+    color: var(--text-mid); transition: background 0.12s, color 0.12s;
+  }
+  .mobile-link:active { background: var(--bg-2); color: var(--green); }
+  .mobile-link.active {
+    color: var(--green); background: var(--green-soft);
+    box-shadow: inset 3px 0 0 var(--green);
+  }
+
+  @media (max-width: 1340px) {
+    .main-nav { gap: 0; }
+    .nav-link { padding: 9px 10px; font-size: 13px; }
+    .brand-name { font-size: 17px; }
+    .header-search input { width: 150px; }
+    .header-search input:focus { width: 150px; }
+  }
+  @media (max-width: 1200px) {
+    .main-nav, .header-search { display: none; }
+    .menu-toggle { display: flex; margin-left: auto; }
+    .mobile-nav:not([hidden]) { display: flex; }
+    .header-inner { height: 68px; }
+  }
+</style>
+
+<script>
+  // Mobile menu
+  const toggle = document.querySelector('.menu-toggle');
+  const nav = document.getElementById('mobile-nav');
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    if (nav) nav.hidden = open;
+  });
+
+  // Search (guides + tools) — index fetched once on first focus
+  let index: any[] | null = null;
+  async function loadIndex() {
+    if (index) return index;
+    const res = await fetch('/search.json');
+    index = await res.json();
+    return index;
+  }
+
+  function wireSearch(inputId: string, resultsId: string) {
+    const input = document.getElementById(inputId) as HTMLInputElement | null;
+    const results = document.getElementById(resultsId);
+    if (!input || !results) return;
+
+    input.addEventListener('focus', loadIndex, { once: true });
+    input.addEventListener('input', async () => {
+      const q = input.value.trim().toLowerCase();
+      if (q.length < 2) { results.hidden = true; results.innerHTML = ''; return; }
+      const data = await loadIndex();
+      const hits = data!
+        .map((item) => {
+          const hay = (item.title + ' ' + item.description + ' ' + item.category).toLowerCase();
+          let score = 0;
+          if (item.title.toLowerCase().includes(q)) score += 3;
+          if (hay.includes(q)) score += 1;
+          return { item, score };
+        })
+        .filter((r) => r.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8);
+
+      results.innerHTML = hits.length
+        ? hits.map(({ item }) =>
+            `<a href="${item.url}"><span class="sr-type ${item.type}">${item.type === 'tool' ? 'Tool' + (item.status === 'soon' ? ' · coming soon' : '') : 'Guide'} · ${item.category}</span><span class="sr-title">${item.title}</span></a>`
+          ).join('')
+        : '<p class="sr-empty">No matches. Try a different word.</p>';
+      results.hidden = false;
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!results.contains(e.target as Node) && e.target !== input) results.hidden = true;
+    });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Escape') results.hidden = true; });
+  }
+
+  wireSearch('search-input', 'search-results');
+  wireSearch('search-input-m', 'search-results-m');
+</script>

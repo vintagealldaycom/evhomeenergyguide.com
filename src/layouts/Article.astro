@@ -1,0 +1,143 @@
+---
+import Base from './Base.astro';
+import AuthorByline from '../components/AuthorByline.astro';
+import RelatedPosts from '../components/RelatedPosts.astro';
+import { pillars } from '../config/site';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'blog'> | CollectionEntry<'guides'>;
+  headings: { depth: number; slug: string; text: string }[];
+  body: string;
+  collection?: 'blog' | 'guides';
+  basePath?: string;
+}
+const { entry, headings, body, collection = 'blog', basePath = '/blog/' } = Astro.props;
+const { title, description, pubDate, updatedDate, category, subcategory, tags, image } = entry.data;
+
+const pillar = pillars.find((p) => p.slug === category);
+const photoClass: Record<string, string> = {
+  'ev-home-charging': 'photo-charge',
+  'smart-home-energy': 'photo-home',
+  'solar-battery-backup': 'photo-solar',
+  'ev-travel-camping': 'photo-camp',
+  'cordless-tools-workshop': 'photo-tools',
+};
+
+// Reading time estimator
+const words = body.split(/\s+/).length;
+const readingTime = Math.max(1, Math.round(words / 220));
+
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const dateFmt = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<Base {title} {description} {image} type="article" {pubDate} {updatedDate}>
+  <div class="reading-progress" aria-hidden="true"><span id="reading-bar"></span></div>
+  <article class="container article">
+    <header class="article-header">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a> <span>/</span>
+        <a href={`/category/${category}/`}>{pillar?.title ?? category}</a>
+        {subcategory && <><span>/</span> <span class="crumb-current">{subcategory}</span></>}
+      </nav>
+      <h1>{title}</h1>
+      <p class="deck">{description}</p>
+      {image ? (
+        <img class="feature-img" src={image} alt="" width="780" height="380" loading="eager" />
+      ) : (
+        <div class:list={['feature-img', 'feature-placeholder', 'photo', photoClass[category]]} aria-hidden="true">
+          <span class="feature-label">{pillar?.title}</span>
+        </div>
+      )}
+      <div class="article-meta">
+        <AuthorByline compact />
+        <div class="meta-facts">
+          <time datetime={pubDate.toISOString()}>{dateFmt.format(pubDate)}</time>
+          {updatedDate && <span>· Updated {dateFmt.format(updatedDate)}</span>}
+          <span class="read-badge">{readingTime} min read</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="article-layout">
+      {toc.length > 2 && (
+        <aside class="toc" aria-label="Table of contents">
+          <h2>On this page</h2>
+          <ol>
+            {toc.map((h) => (
+              <li class={`toc-d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>
+            ))}
+          </ol>
+        </aside>
+      )}
+
+      <div class="article-body">
+        <slot />
+
+        <AuthorByline />
+        <RelatedPosts currentSlug={entry.id} {category} {tags} {collection} {basePath} />
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .article { padding-top: 40px; }
+  .article-header { max-width: 780px; margin: 0 auto 40px; }
+  .crumbs { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .crumbs a:hover { color: var(--green); }
+  .article-header h1 { font-family: var(--font-display); font-size: clamp(30px, 4.5vw, 46px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 16px; }
+  .deck { font-size: 17px; color: var(--text-mid); line-height: 1.6; margin-bottom: 24px; }
+  .feature-img { width: 100%; height: 340px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--line); margin-bottom: 24px; }
+  .feature-placeholder { display: flex; align-items: flex-end; padding: 22px 26px; }
+  .feature-label { position: relative; z-index: 2; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+  .article-meta { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .meta-facts { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .read-badge { padding: 4px 10px; background: var(--green-soft); color: var(--green); border-radius: 100px; }
+
+  .article-layout { display: grid; grid-template-columns: 240px minmax(0, 780px); gap: 48px; justify-content: center; }
+  .toc { position: sticky; top: 88px; align-self: start; }
+  .toc h2 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 12px; }
+  .toc ol { list-style: none; border-left: 1px solid var(--line); }
+  .toc li a { display: block; padding: 6px 0 6px 14px; font-size: 13px; color: var(--text-dim); border-left: 2px solid transparent; margin-left: -1px; }
+  .toc li a:hover { color: var(--green); border-left-color: var(--green); }
+  .toc-d3 a { padding-left: 26px !important; font-size: 12px !important; }
+
+  .article-body :global(h2) { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 40px 0 16px; scroll-margin-top: 88px; }
+  .article-body :global(h3) { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin: 28px 0 12px; scroll-margin-top: 88px; }
+  .article-body :global(p) { margin-bottom: 16px; color: var(--text-mid); font-size: 15.5px; line-height: 1.7; }
+  .article-body :global(a) { color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
+  .article-body :global(ul), .article-body :global(ol) { margin: 0 0 16px 22px; color: var(--text-mid); line-height: 1.7; }
+  .article-body :global(blockquote) { border-left: 3px solid var(--green); padding: 4px 0 4px 18px; margin: 20px 0; color: var(--text); font-style: italic; }
+  .article-body :global(table) { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  .article-body :global(th), .article-body :global(td) { border: 1px solid var(--line); padding: 10px 14px; text-align: left; }
+  .article-body :global(th) { background: var(--bg-2); font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .article-body :global(code) { font-family: var(--font-mono); font-size: 13px; background: var(--bg-2); padding: 2px 6px; border-radius: 5px; }
+
+  @media (max-width: 1000px) {
+    .article-layout { grid-template-columns: 1fr; }
+    .toc { position: static; margin-bottom: 8px; }
+  }
+
+  /* #17 — reading progress bar */
+  .reading-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: transparent; z-index: 200; pointer-events: none; }
+  #reading-bar { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--green-bright)); box-shadow: 0 0 8px rgba(74,222,128,0.5); transition: width 0.08s linear; }
+</style>
+
+<script>
+  const bar = document.getElementById('reading-bar');
+  const article = document.querySelector('.article-body') as HTMLElement | null;
+  if (bar && article) {
+    const update = () => {
+      const start = article.offsetTop;
+      const total = article.offsetHeight - window.innerHeight * 0.4;
+      const scrolled = window.scrollY - start + window.innerHeight * 0.4;
+      const pct = Math.min(Math.max((scrolled / total) * 100, 0), 100);
+      bar.style.width = pct + '%';
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+</script>
